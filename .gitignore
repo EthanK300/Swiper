@@ -20,3 +20,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+/.idea/other.xml
