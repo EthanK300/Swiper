@@ -9,6 +9,7 @@ public class StartupActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        System.out.println("aaaa");
         startActivity(new Intent(this, MainActivity.class));
     }
 }

@@ -5,15 +5,17 @@
     android:id="@+id/main"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+
     <TextView
+        android:id="@+id/temp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:textColor="@color/white"
         android:text="temp"
-        android:textSize = "75px"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/black"
+        android:textSize="75px"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        android:id = "@+id/temp"
-        />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+    />
 </androidx.constraintlayout.widget.ConstraintLayout>
