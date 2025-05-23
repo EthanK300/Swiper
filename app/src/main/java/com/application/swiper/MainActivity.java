@@ -10,7 +10,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
         System.out.println("bbbb");
-        TextView temp = this.findViewById(R.id.temp);
+//        TextView temp = this.findViewById(R.id.temp);
 
     }
 }
