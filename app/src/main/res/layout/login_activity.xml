@@ -8,7 +8,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingBottom="64dp"
-    android:background="#086788"
+    android:background="@color/cerulean"
     app:layout_constraintTop_toTopOf="parent"
     >
     <TextView
@@ -22,6 +22,7 @@
         android:fontFamily="@font/kiwifont"
         android:gravity="center"
         android:textSize="100sp"
+
         />
     <Button
         android:id="@+id/login"
@@ -31,16 +32,7 @@
         app:layout_constraintBottom_toTopOf="@id/create"
         android:text="Login"
         android:textColor="@color/black"
-        />
-    <Button
-        android:id="@+id/signedout"
-        android:layout_width="match_parent"
-        android:layout_height="65sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:text="Continue without signing in"
-        android:textColor="@color/white"
-        style="?android:attr/borderlessButtonStyle"
+        android:background="@drawable/rounded_button"
         />
     <Button
         android:id="@+id/create"
@@ -50,5 +42,17 @@
         app:layout_constraintBottom_toTopOf="@id/signedout"
         android:text="Create Account"
         android:textColor="@color/black"
+        android:background="@drawable/rounded_button"
+        />
+    <Button
+        android:id="@+id/signedout"
+        android:layout_width="match_parent"
+        android:layout_height="65sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Continue without signing in"
+        android:textColor="@color/white"
+        android:background="@drawable/rounded_borderless_button"
+        style="?android:attr/borderlessButtonStyle"
         />
 </androidx.constraintlayout.widget.ConstraintLayout>
