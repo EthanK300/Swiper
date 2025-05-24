@@ -12,25 +12,39 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
+    usertype type = usertype.newUser;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
-//        startActivity(new Intent(this, MainActivity.class));
+//
         SharedPreferences sharedPrefs = getPreferences(Context.MODE_PRIVATE);
+        Intent intent = new Intent(this, MainActivity.class);
         if(savedInstanceState != null){
             // save exists, skip login page
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra();
+            intent.putExtra("usertype", (usertype)savedInstanceState.get("usertype"));
             startActivity(intent);
             finish();
         }
-        Button loginButton = (Button)this.findViewById(R.id.login);
-        Button createButton = (Button)this.findViewById(R.id.create);
-        Button continueButton = (Button)this.findViewById(R.id.signedout);
-        loginButton.setOnClickListener(view -> System.out.println("login clicked"));
-        createButton.setOnClickListener(view -> System.out.println("create clicked"));
-        continueButton.setOnClickListener(view -> System.out.println("continue clicked"));
+        Button loginButton = this.findViewById(R.id.login);
+        Button createButton = this.findViewById(R.id.create);
+        Button continueButton = this.findViewById(R.id.signedout);
+
+        loginButton.setOnClickListener(v -> {
+            System.out.println("login clicked");
+            System.out.println();
+        });
+
+        createButton.setOnClickListener(v -> {
+            System.out.println("create clicked");
+            System.out.println();
+        });
+
+        continueButton.setOnClickListener(v -> {
+            type = usertype.newGuest;
+            startActivity(intent);
+            finish();
+        });
 
     }
     @Override
