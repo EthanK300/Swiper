@@ -13,14 +13,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
+    SharedPreferences sharedPrefs;
+    SharedPreferences.Editor editor;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
 
         // initialize login helpers
-        SharedPreferences sharedPrefs = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        sharedPrefs = getPreferences(Context.MODE_PRIVATE);
+        editor = sharedPrefs.edit();
         Intent intent = new Intent(this, MainActivity.class);
 
         // initialize main application activity based on login status
@@ -80,5 +82,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        editor.apply();
     }
 }
