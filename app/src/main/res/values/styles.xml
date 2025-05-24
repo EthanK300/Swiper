@@ -5,4 +5,16 @@
         <item name="colorPrimaryDark">@color/purple_700</item>
         <item name="colorAccent">@color/teal_200</item>
     </style>
+    <style name="round_button">
+        <item name="android:layout_marginTop">15dp</item>
+        <item name="android:layout_marginBottom">15dp</item>
+    </style>
+    <style name="primaryStartButton" parent="round_button">
+        <item name="android:textColor">@color/black</item>
+    </style>
+    <style name="secondaryStartButton" parent="round_button">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
 </resources>
