@@ -19,9 +19,11 @@ public class LoginActivity extends AppCompatActivity {
 //        startActivity(new Intent(this, MainActivity.class));
         SharedPreferences sharedPrefs = getPreferences(Context.MODE_PRIVATE);
         if(savedInstanceState != null){
-            System.out.println("exists save");
-        }else{
-            System.out.println("no save exists");
+            // save exists, skip login page
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra();
+            startActivity(intent);
+            finish();
         }
         Button loginButton = (Button)this.findViewById(R.id.login);
         Button createButton = (Button)this.findViewById(R.id.create);
@@ -30,5 +32,29 @@ public class LoginActivity extends AppCompatActivity {
         createButton.setOnClickListener(view -> System.out.println("create clicked"));
         continueButton.setOnClickListener(view -> System.out.println("continue clicked"));
 
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
