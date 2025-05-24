@@ -20,7 +20,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // initialize login helpers
         SharedPreferences sharedPrefs = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
         Intent intent = new Intent(this, MainActivity.class);
 
         // initialize main application activity based on login status
