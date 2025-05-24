@@ -12,20 +12,35 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
-    usertype type = usertype.newUser;
+    String userType = "newGuest";
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
-//
+
+        // initialize login helpers
         SharedPreferences sharedPrefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
         Intent intent = new Intent(this, MainActivity.class);
-        if(savedInstanceState != null){
+
+        // initialize main application activity based on login status
+        if(sharedPrefs != null && sharedPrefs.getBoolean("isLoggedIn", false)){
             // save exists, skip login page
-            intent.putExtra("usertype", (usertype)savedInstanceState.get("usertype"));
+            userType = sharedPrefs.getString("usertype", "newGuest");
+            if(userType.equals("loggedInUser")){
+                // user account already exists
+                intent.putExtra("type", "user");
+                intent.putExtra("username",sharedPrefs.getString("accountid", "null"));
+                intent.putExtra("password", sharedPrefs.getString("password", "null"));
+            }else{
+                // guest account already exists
+                intent.putExtra("type", "guest");
+            }
             startActivity(intent);
             finish();
         }
+        // no save exists, create new user / guest by default
+
         Button loginButton = this.findViewById(R.id.login);
         Button createButton = this.findViewById(R.id.create);
         Button continueButton = this.findViewById(R.id.signedout);
@@ -41,7 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         continueButton.setOnClickListener(v -> {
-            type = usertype.newGuest;
+            intent.putExtra("usertype", "newGuest");
             startActivity(intent);
             finish();
         });
@@ -60,11 +75,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
     }
 
     @Override
