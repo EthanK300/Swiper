@@ -7,8 +7,8 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/swiper_logo"
-        android:roundIcon="@mipmap/swiper_logo"
+        android:icon="@mipmap/swiper_logo_new"
+        android:roundIcon="@mipmap/swiper_logo_new"
         android:supportsRtl="true"
         android:theme="@style/default.noActionBar"
         tools:targetApi="31">

@@ -24,7 +24,7 @@
         android:textSize="100sp"
         />
     <ImageView
-        android:src="@drawable/swiperlogo2"
+        android:src="@drawable/swiperlogobetter"
         android:layout_width="150dp"
         android:layout_height="150dp"
         app:layout_constraintLeft_toLeftOf="parent"
