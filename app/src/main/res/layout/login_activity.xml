@@ -24,6 +24,7 @@
         android:textSize="100sp"
         />
     <ImageView
+        android:id="@+id/logo"
         android:src="@drawable/swiperlogobetter"
         android:layout_width="150dp"
         android:layout_height="150dp"
@@ -72,6 +73,7 @@
             style="@style/secondaryStartButton"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -79,7 +81,40 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         >
-
+        <TextView
+            android:id="@+id/user_login_prompt"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:text="Username/Email"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.6"
+            />
+        <EditText
+            android:id="@+id/user_login_input"
+            android:layout_height="50sp"
+            android:layout_width="match_parent"
+            android:inputType="text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/user_login_prompt"
+            />
+        <TextView
+            android:id="@+id/user_password_prompt"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:text="Password"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/user_login_input"
+            />
+        <EditText
+            android:id="@+id/user_password_input"
+            android:layout_height="50sp"
+            android:layout_width="match_parent"
+            android:inputType="text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/user_password_prompt"
+            />
     </androidx.constraintlayout.widget.ConstraintLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="fill_parent"

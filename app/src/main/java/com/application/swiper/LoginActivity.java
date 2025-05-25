@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
                 intent.putExtra("type", "user");
                 intent.putExtra("username",sharedPrefs.getString("accountid", "null"));
                 intent.putExtra("password", sharedPrefs.getString("password", "null"));
+                // TODO: change this to a more secure local session storage alternative
             }else{
                 // guest account already exists
                 intent.putExtra("type", "guest");
@@ -44,25 +46,31 @@ public class LoginActivity extends AppCompatActivity {
         }
         // no save exists, create new user / guest by default
 
+        // create references and set starting visibilities
         Button loginButton = this.findViewById(R.id.login);
         Button createButton = this.findViewById(R.id.create);
         Button continueButton = this.findViewById(R.id.signedout);
         Button backButton = this.findViewById(R.id.backButton);
+        ConstraintLayout startGroup = this.findViewById(R.id.start_group);
+        ConstraintLayout loginGroup = this.findViewById(R.id.login_group);
+        ConstraintLayout registerGroup = this.findViewById(R.id.register_group);
+        loginGroup.setVisibility(GONE);
+        registerGroup.setVisibility(GONE);
 
         backButton.setVisibility(GONE);
 
         loginButton.setOnClickListener(v -> {
-            this.findViewById(R.id.start_group).setVisibility(GONE);
-            this.findViewById(R.id.register_group).setVisibility(GONE);
-            this.findViewById(R.id.login_group).setVisibility(VISIBLE);
-            this.findViewById(R.id.backButton).setVisibility(VISIBLE);
+            startGroup.setVisibility(GONE);
+            registerGroup.setVisibility(GONE);
+            loginGroup.setVisibility(VISIBLE);
+            backButton.setVisibility(VISIBLE);
         });
 
         createButton.setOnClickListener(v -> {
-            this.findViewById(R.id.start_group).setVisibility(GONE);
-            this.findViewById(R.id.login_group).setVisibility(GONE);
-            this.findViewById(R.id.register_group).setVisibility(VISIBLE);
-            this.findViewById(R.id.backButton).setVisibility(VISIBLE);
+            startGroup.setVisibility(GONE);
+            loginGroup.setVisibility(GONE);
+            registerGroup.setVisibility(VISIBLE);
+            backButton.setVisibility(VISIBLE);
         });
 
         continueButton.setOnClickListener(v -> {
@@ -72,10 +80,10 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         backButton.setOnClickListener(v -> {
-            this.findViewById(R.id.login_group).setVisibility(GONE);
-            this.findViewById(R.id.register_group).setVisibility(GONE);
-            this.findViewById(R.id.start_group).setVisibility(VISIBLE);
-            this.findViewById(R.id.backButton).setVisibility(GONE);
+            loginGroup.setVisibility(GONE);
+            registerGroup.setVisibility(GONE);
+            startGroup.setVisibility(VISIBLE);
+            backButton.setVisibility(GONE);
         });
 
     }
