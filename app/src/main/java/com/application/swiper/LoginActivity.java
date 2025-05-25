@@ -56,7 +56,6 @@ public class LoginActivity extends AppCompatActivity {
         ConstraintLayout registerGroup = this.findViewById(R.id.register_group);
         loginGroup.setVisibility(GONE);
         registerGroup.setVisibility(GONE);
-
         backButton.setVisibility(GONE);
 
         loginButton.setOnClickListener(v -> {
