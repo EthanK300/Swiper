@@ -173,6 +173,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/register_password_prompt"
             />
+        <TextView
+            android:id="@+id/register_cpassword_prompt"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:text="Password"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/register_password_input"
+            />
+        <EditText
+            android:id="@+id/register_cpassword_input"
+            android:layout_height="50sp"
+            android:layout_width="match_parent"
+            android:inputType="text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/register_cpassword_prompt"
+            />
     </androidx.constraintlayout.widget.ConstraintLayout>
     <Button
         android:id="@+id/backButton"
