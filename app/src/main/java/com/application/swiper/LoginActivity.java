@@ -7,21 +7,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
     String pageOn = "start"; // start, login, register
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_activity);
-
+        context = this.getApplicationContext();
         // initialize login helpers
         sharedPrefs = getPreferences(Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
@@ -47,29 +50,68 @@ public class LoginActivity extends AppCompatActivity {
         // no save exists, create new user / guest by default
 
         // create references and set starting visibilities
+        ConstraintLayout main = this.findViewById(R.id.main);
         Button loginButton = this.findViewById(R.id.login);
         Button createButton = this.findViewById(R.id.create);
         Button continueButton = this.findViewById(R.id.signedout);
         Button backButton = this.findViewById(R.id.backButton);
+        Button submitButton = this.findViewById(R.id.submit);
         ConstraintLayout startGroup = this.findViewById(R.id.start_group);
         ConstraintLayout loginGroup = this.findViewById(R.id.login_group);
         ConstraintLayout registerGroup = this.findViewById(R.id.register_group);
+        ConstraintLayout options = this.findViewById(R.id.options);
+
+        ConstraintSet loginSet = new ConstraintSet();
+        loginSet.clone(main);
+        ConstraintSet registerSet = new ConstraintSet();
+        registerSet.clone(main);
+
+        loginSet.connect(
+                R.id.options,                      // view to modify
+                ConstraintSet.TOP,                 // which side of the view
+                R.id.login_group,                  // target view
+                ConstraintSet.BOTTOM,              // target side
+                16                                 // margin in pixels
+        );
+        loginSet.setVisibility(R.id.start_group, GONE);
+        loginSet.setVisibility(R.id.register_group, GONE);
+        loginSet.setVisibility(R.id.login_group, VISIBLE);
+        loginSet.setVisibility(R.id.options, VISIBLE);
+
+        registerSet.connect(
+                R.id.options,                      // view to modify
+                ConstraintSet.TOP,                 // which side of the view
+                R.id.register_group,               // target view
+                ConstraintSet.BOTTOM,              // target side
+                16                                 // margin in pixels
+        );
+        registerSet.setVisibility(R.id.start_group, GONE);
+        registerSet.setVisibility(R.id.register_group, VISIBLE);
+        registerSet.setVisibility(R.id.login_group, GONE);
+        registerSet.setVisibility(R.id.options, VISIBLE);
+
+        int optionSpacing = 32; // Spacing between the login/register groups and the options (back button or submit)
+
+        int marginInPx = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                optionSpacing,
+                context.getResources().getDisplayMetrics()
+        );
+
         loginGroup.setVisibility(GONE);
         registerGroup.setVisibility(GONE);
-        backButton.setVisibility(GONE);
+        options.setVisibility(GONE);
 
+        loginSet.connect(R.id.options, ConstraintSet.TOP, R.id.login_group, ConstraintSet.BOTTOM, marginInPx);
+        registerSet.connect(R.id.options, ConstraintSet.TOP, R.id.register_group, ConstraintSet.BOTTOM, marginInPx);
+
+        // TODO: make animations for this so they don't instantly appear and disappear
         loginButton.setOnClickListener(v -> {
-            startGroup.setVisibility(GONE);
-            registerGroup.setVisibility(GONE);
-            loginGroup.setVisibility(VISIBLE);
-            backButton.setVisibility(VISIBLE);
+            loginSet.applyTo(main);
         });
 
         createButton.setOnClickListener(v -> {
-            startGroup.setVisibility(GONE);
-            loginGroup.setVisibility(GONE);
-            registerGroup.setVisibility(VISIBLE);
-            backButton.setVisibility(VISIBLE);
+            registerSet.applyTo(main);
         });
 
         continueButton.setOnClickListener(v -> {
@@ -82,7 +124,11 @@ public class LoginActivity extends AppCompatActivity {
             loginGroup.setVisibility(GONE);
             registerGroup.setVisibility(GONE);
             startGroup.setVisibility(VISIBLE);
-            backButton.setVisibility(GONE);
+            options.setVisibility(GONE);
+        });
+
+        submitButton.setOnClickListener(v -> {
+
         });
 
     }
