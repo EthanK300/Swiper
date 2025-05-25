@@ -1,18 +1,19 @@
 package com.application.swiper;
 
-import static android.app.PendingIntent.getActivity;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
+    String pageOn = "start"; // start, login, register
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
     @Override
@@ -46,21 +47,35 @@ public class LoginActivity extends AppCompatActivity {
         Button loginButton = this.findViewById(R.id.login);
         Button createButton = this.findViewById(R.id.create);
         Button continueButton = this.findViewById(R.id.signedout);
+        Button backButton = this.findViewById(R.id.backButton);
+
+        backButton.setVisibility(GONE);
 
         loginButton.setOnClickListener(v -> {
-            System.out.println("login clicked");
-            System.out.println();
+            this.findViewById(R.id.start_group).setVisibility(GONE);
+            this.findViewById(R.id.register_group).setVisibility(GONE);
+            this.findViewById(R.id.login_group).setVisibility(VISIBLE);
+            this.findViewById(R.id.backButton).setVisibility(VISIBLE);
         });
 
         createButton.setOnClickListener(v -> {
-            System.out.println("create clicked");
-            System.out.println();
+            this.findViewById(R.id.start_group).setVisibility(GONE);
+            this.findViewById(R.id.login_group).setVisibility(GONE);
+            this.findViewById(R.id.register_group).setVisibility(VISIBLE);
+            this.findViewById(R.id.backButton).setVisibility(VISIBLE);
         });
 
         continueButton.setOnClickListener(v -> {
             intent.putExtra("usertype", "newGuest");
             startActivity(intent);
             finish();
+        });
+
+        backButton.setOnClickListener(v -> {
+            this.findViewById(R.id.login_group).setVisibility(GONE);
+            this.findViewById(R.id.register_group).setVisibility(GONE);
+            this.findViewById(R.id.start_group).setVisibility(VISIBLE);
+            this.findViewById(R.id.backButton).setVisibility(GONE);
         });
 
     }
@@ -77,6 +92,11 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        if(pageOn.equals("login")){
+
+        }else if(pageOn.equals("register")){
+
+        }
     }
 
     @Override

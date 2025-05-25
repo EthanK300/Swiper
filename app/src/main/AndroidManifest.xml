@@ -11,6 +11,7 @@
         android:roundIcon="@mipmap/swiper_logo_new"
         android:supportsRtl="true"
         android:theme="@style/default.noActionBar"
+        android:label="Swiper"
         tools:targetApi="31">
         <activity android:name=".LoginActivity" android:exported="true" android:screenOrientation="portrait">
             <intent-filter>
