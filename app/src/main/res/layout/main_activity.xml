@@ -7,18 +7,33 @@
     android:layout_height="fill_parent"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
+    android:paddingBottom="64dp"
+    android:background="@color/cerulean"
     app:layout_constraintTop_toTopOf="parent"
     >
     <TextView
-        android:id="@+id/temp"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text="temp"
-        android:textColor="@color/black"
-        android:textSize="75px"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.15"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-    />
+        android:text="Swiper"
+        android:id="@+id/title"
+        android:textColor="@color/white"
+        android:fontFamily="@font/kiwifont"
+        android:gravity="center"
+        android:textSize="100sp"
+        />
+    <ImageView
+        android:id="@+id/logo"
+        android:src="@drawable/swiperlogobetter"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintVertical_bias="0.4"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,7 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.widget.Button;
-
+import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -20,6 +20,25 @@ public class LoginActivity extends AppCompatActivity {
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
     Context context;
+    Button loginButton;
+    Button createButton;
+    Button continueButton;
+    Button backButton;
+    Button submitButton;
+    ConstraintLayout main;
+    ConstraintLayout startGroup;
+    ConstraintLayout loginGroup;
+    ConstraintLayout registerGroup;
+    ConstraintLayout options;
+    ConstraintSet loginSet;
+    ConstraintSet registerSet;
+    EditText loginUserEmail;
+    EditText loginUserPassword;
+    EditText registerUsername;
+    EditText registerEmail;
+    EditText registerPassword;
+    EditText registercPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -50,20 +69,26 @@ public class LoginActivity extends AppCompatActivity {
         // no save exists, create new user / guest by default
 
         // create references and set starting visibilities
-        ConstraintLayout main = this.findViewById(R.id.main);
-        Button loginButton = this.findViewById(R.id.login);
-        Button createButton = this.findViewById(R.id.create);
-        Button continueButton = this.findViewById(R.id.signedout);
-        Button backButton = this.findViewById(R.id.backButton);
-        Button submitButton = this.findViewById(R.id.submit);
-        ConstraintLayout startGroup = this.findViewById(R.id.start_group);
-        ConstraintLayout loginGroup = this.findViewById(R.id.login_group);
-        ConstraintLayout registerGroup = this.findViewById(R.id.register_group);
-        ConstraintLayout options = this.findViewById(R.id.options);
+        main = this.findViewById(R.id.main);
+        loginButton = this.findViewById(R.id.login);
+        createButton = this.findViewById(R.id.create);
+        continueButton = this.findViewById(R.id.signedout);
+        backButton = this.findViewById(R.id.backButton);
+        submitButton = this.findViewById(R.id.submit);
+        startGroup = this.findViewById(R.id.start_group);
+        loginGroup = this.findViewById(R.id.login_group);
+        registerGroup = this.findViewById(R.id.register_group);
+        options = this.findViewById(R.id.options);
+        loginUserEmail = this.findViewById(R.id.user_login_input);
+        loginUserPassword = this.findViewById(R.id.user_password_input);
+        registerUsername = this.findViewById(R.id.register_user_input);
+        registerEmail = this.findViewById(R.id.register_email_input);
+        registerPassword = this.findViewById(R.id.register_password_input);
+        registercPassword = this.findViewById(R.id.register_cpassword_input);
 
-        ConstraintSet loginSet = new ConstraintSet();
+        loginSet = new ConstraintSet();
         loginSet.clone(main);
-        ConstraintSet registerSet = new ConstraintSet();
+        registerSet = new ConstraintSet();
         registerSet.clone(main);
 
         loginSet.connect(
@@ -108,14 +133,16 @@ public class LoginActivity extends AppCompatActivity {
         // TODO: make animations for this so they don't instantly appear and disappear
         loginButton.setOnClickListener(v -> {
             loginSet.applyTo(main);
+            pageOn = "login";
         });
 
         createButton.setOnClickListener(v -> {
             registerSet.applyTo(main);
+            pageOn = "register";
         });
 
         continueButton.setOnClickListener(v -> {
-            intent.putExtra("usertype", "newGuest");
+            intent.putExtra("type", "newGuest");
             startActivity(intent);
             finish();
         });
@@ -128,7 +155,12 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         submitButton.setOnClickListener(v -> {
-
+            System.out.println("continue button clicked");
+            if(pageOn.equals("login")){
+                // attempt to login
+            }else if(pageOn.equals("register")){
+                // attempt to create new account
+            }
         });
 
     }
