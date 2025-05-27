@@ -7,6 +7,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -47,30 +50,24 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("This Week"));
         tabLayout.addTab(tabLayout.newTab().setText("All"));
 
+        fragments = new ArrayList<Fragment>();
+        fragments.add(PageFragment.newInstance("a"));
+        fragments.add(PageFragment.newInstance("b"));
+        fragments.add(PageFragment.newInstance("c"));
+
+
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, new PageFragment()) // TODO: finish this so that fragments work
+                .replace(R.id.fragment_container, fragments.get(0)) // TODO: finish this so that fragments work
                 .commit();
 
         // Handle tab switching
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                Fragment selected = null;
-
-                // TODO: finish this so that the fragments work
-                switch (tab.getPosition()) {
-                    case 0:
-                        break;
-                    case 1:
-                        break;
-                    case 2:
-                        break;
-                }
-
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.fragment_container, selected)
+                        .replace(R.id.fragment_container, fragments.get(tab.getPosition()))
                         .commit();
             }
 
