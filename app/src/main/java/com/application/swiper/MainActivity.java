@@ -2,6 +2,8 @@ package com.application.swiper;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -60,6 +62,17 @@ public class MainActivity extends AppCompatActivity {
                 .beginTransaction()
                 .replace(R.id.fragment_container, fragments.get(0)) // TODO: finish this so that fragments work
                 .commit();
+
+        ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
+
+        for (int i = 0; i < tabStrip.getChildCount(); i++) {
+            View tabView = tabStrip.getChildAt(i);
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
+            params.setMargins(0, 0, 0, 0); // Left and right margin
+            tabView.setPadding(0, 0, 0, 0);
+            tabView.requestLayout();
+
+        }
 
         // Handle tab switching
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
