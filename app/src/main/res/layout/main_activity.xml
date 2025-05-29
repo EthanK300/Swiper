@@ -33,10 +33,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/guideline_start"
         >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:text="This Week"
+            android:id="@+id/pageTitle"
+            android:textColor="@color/white"
+            android:fontFamily="@font/kiwifont"
+            android:textSize="45sp"
+            />
+
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profile_picture"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="55dp"
             android:src="@drawable/blank_profile"
             app:shapeAppearanceOverlay="@style/profile"
             android:contentDescription="Profile"
@@ -51,16 +63,19 @@
             android:elevation="4dp"
             />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            app:layout_constraintStart_toStartOf="parent"
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:src="@drawable/calendaricon"
+            android:id="@+id/calendar"
             app:layout_constraintTop_toTopOf="parent"
-            android:text="This Week"
-            android:id="@+id/pageTitle"
-            android:textColor="@color/white"
-            android:fontFamily="@font/kiwifont"
-            android:textSize="45sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/profile_picture"
+            app:layout_constraintDimensionRatio="1:1"
+            android:scaleType="fitCenter"
+            android:contentDescription="Calendar"
+            android:background="@color/cerulean"
+            android:elevation="4dp"
             />
 
         <com.google.android.material.tabs.TabLayout
@@ -69,8 +84,9 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/pageTitle"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/profile_picture"
+            app:layout_constraintEnd_toStartOf="@id/calendar"
             app:tabMode="fixed"
+            android:background="@drawable/rounded_button"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
