@@ -13,10 +13,10 @@ public class PageFragment extends Fragment {
 
     }
 
-    public static PageFragment newInstance(String text) {
+    public static PageFragment newInstance(String which) {
         PageFragment fragment = new PageFragment();
         Bundle args = new Bundle();
-        args.putString("text", text);
+        args.putString("type", which);
         fragment.setArguments(args);
         return fragment;
     }
@@ -26,7 +26,8 @@ public class PageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Safely get the argument
-        String text = getArguments().getString("text");
+        System.out.println("test");
+        String text = getArguments().getString("type");
         TextView t = view.findViewById(R.id.card_text);
         t.setText(text);
     }

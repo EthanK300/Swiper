@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
@@ -21,7 +23,8 @@ public class MainActivity extends AppCompatActivity {
     ImageButton aiAssist;
     ShapeableImageView profile;
     TabLayout tabLayout;
-    List<Fragment> fragments;
+    List<Fragment> fragments = new ArrayList<Fragment>();
+    String[] labels = {"Today","This Week", "All"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -48,20 +51,15 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("profile clicked");
         });
 
-        tabLayout.addTab(tabLayout.newTab().setText("Today"));
-        tabLayout.addTab(tabLayout.newTab().setText("This Week"));
-        tabLayout.addTab(tabLayout.newTab().setText("All"));
-
-        fragments = new ArrayList<Fragment>();
-        fragments.add(PageFragment.newInstance("a"));
-        fragments.add(PageFragment.newInstance("b"));
-        fragments.add(PageFragment.newInstance("c"));
-
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragments.get(0)) // TODO: finish this so that fragments work
-                .commit();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        for(String s : labels){
+            tabLayout.addTab(tabLayout.newTab().setText(s));
+            Fragment f = PageFragment.newInstance(s);
+            fragments.add(f);
+            ft.add(R.id.fragment_container, f);
+        }
+        ft.show(fragments.get(0)).commit();
+        // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
 
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
 
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             View tabView = tabStrip.getChildAt(i);
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
             params.setMargins(0, 0, 0, 0); // Left and right margin
-            tabView.setPadding(8, 8, 8, 8);
+            tabView.setPadding(0, 0, 0, 0);
             tabView.requestLayout();
 
         }
@@ -78,10 +76,13 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, fragments.get(tab.getPosition()))
-                        .commit();
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                for(Fragment f : fragments){
+                    ft.hide(f);
+                }
+                System.out.println("pos:" + tab.getPosition());
+                ft.show(fragments.get(tab.getPosition()));
+                ft.commit();
             }
 
             @Override
