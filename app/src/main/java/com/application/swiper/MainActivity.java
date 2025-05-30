@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tabLayout;
     List<Fragment> fragments = new ArrayList<Fragment>();
     String[] labels = {"Today","This Week", "All"};
+    TextView title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         aiAssist = this.findViewById(R.id.aitool);
         profile = this.findViewById(R.id.profile_picture);
         tabLayout = findViewById(R.id.tab_layout);
+        title = this.findViewById(R.id.pageTitle);
 
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
@@ -57,7 +61,11 @@ public class MainActivity extends AppCompatActivity {
             Fragment f = PageFragment.newInstance(s);
             fragments.add(f);
             ft.add(R.id.fragment_container, f);
+            ft.hide(f);
         }
+        Fragment calendar = PageFragment.newInstance("Calendar");
+        fragments.add(calendar);
+        ft.add(R.id.fragment_container, calendar).hide(calendar);
         ft.show(fragments.get(0)).commit();
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
 
@@ -81,8 +89,14 @@ public class MainActivity extends AppCompatActivity {
                     ft.hide(f);
                 }
                 System.out.println("pos:" + tab.getPosition());
-                ft.show(fragments.get(tab.getPosition()));
-                ft.commit();
+                Fragment f = fragments.get(tab.getPosition());
+                String which = f.getArguments().getString("type", "err");
+                if(which.equals("err")){
+                    System.err.println("error fetching args");
+                }else{
+                    title.setText(which);
+                }
+                ft.show(f).commit();
             }
 
             @Override
