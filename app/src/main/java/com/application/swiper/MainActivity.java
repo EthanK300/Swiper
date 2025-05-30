@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
             View tabView = tabStrip.getChildAt(i);
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tabView.getLayoutParams();
             params.setMargins(0, 0, 0, 0); // Left and right margin
-            tabView.setPadding(0, 0, 0, 0);
+            tabView.setPadding(8, 8, 8, 8);
             tabView.requestLayout();
 
         }
