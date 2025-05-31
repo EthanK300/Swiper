@@ -1,13 +1,14 @@
 package com.application.swiper;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 public class PageFragment extends Fragment {
@@ -29,17 +30,6 @@ public class PageFragment extends Fragment {
         // Safely get the argument
         String fragmentType = getArguments().getString("type");
         System.out.println(fragmentType);
-
-        if(fragmentType.equals("DEFAULT")){
-            TextView tv = new TextView(getContext());
-            tv.setText("No tasks created yet. Click the + to create them!");
-            tv.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            ));
-            ((LinearLayout)view.findViewById(R.id.itemContainer)).addView(tv);
-        }
-
     }
 
     @Override

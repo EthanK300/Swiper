@@ -101,6 +101,21 @@
         app:layout_constraintBottom_toTopOf="@id/guideline_end"
         />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/noContentMessage"
+        android:text="No tasks yet, Click the + to create them!"
+        android:textColor="@color/white"
+        android:background="@color/cerulean"
+        app:layout_constraintTop_toBottomOf="@id/guideline_start"
+        app:layout_constraintBottom_toTopOf="@id/guideline_end"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.5"
+        />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"

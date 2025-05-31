@@ -1,9 +1,13 @@
 package com.application.swiper;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -27,11 +31,14 @@ public class MainActivity extends AppCompatActivity {
     ImageButton aiAssist;
     ShapeableImageView profile;
     TabLayout tabLayout;
+    FrameLayout frameLayout;
     List<Fragment> fragments = new ArrayList<Fragment>();
-    String[] labels = {"Today","This Week", "All", "Calendar", "DEFAULT"};
+    String[] labels = {"Today","This Week", "All", "Calendar"};
     TextView title;
+    TextView noContentMessage;
     AppDatabase db;
     DataManager dm;
+    boolean hasItems = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -44,10 +51,12 @@ public class MainActivity extends AppCompatActivity {
         profile = this.findViewById(R.id.profile_picture);
         tabLayout = this.findViewById(R.id.tab_layout);
         title = this.findViewById(R.id.pageTitle);
+        noContentMessage = this.findViewById(R.id.noContentMessage);
+        frameLayout = this.findViewById(R.id.fragment_container);
 
         System.out.println("session type: " + intent.getStringExtra("type"));
         db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
-
+        dm = db.dataManager();
 
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
@@ -67,18 +76,16 @@ public class MainActivity extends AppCompatActivity {
             Fragment f = PageFragment.newInstance(s);
             fragments.add(f);
             ft.add(R.id.fragment_container, f);
-            if(s.equals("DEFAULT")){
+            if(s.equals("Calendar")){
                 ft.show(f);
-            }else if(s.equals("Calendar")){
-                ft.hide(f);
             }else{
                 tabLayout.addTab(tabLayout.newTab().setText(s));
-                ft.show(f);
+                ft.hide(f);
             }
         }
         ft.commit();
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
-
+        // TODO: when adding the database calls update the hasItems variable
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
 
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
@@ -91,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Handle tab switching
+        // TODO: add calendar button functionality to this listener or another equivalent
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -107,6 +115,13 @@ public class MainActivity extends AppCompatActivity {
                     title.setText(which);
                 }
                 ft.show(f).commit();
+                if(hasItems){
+                    frameLayout.setVisibility(VISIBLE);
+                    noContentMessage.setVisibility(GONE);
+                }else{
+                    frameLayout.setVisibility(GONE);
+                    noContentMessage.setVisibility(VISIBLE);
+                }
             }
 
             @Override
@@ -119,5 +134,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        if(hasItems){
+            frameLayout.setVisibility(VISIBLE);
+            noContentMessage.setVisibility(GONE);
+        }else{
+            frameLayout.setVisibility(GONE);
+            noContentMessage.setVisibility(VISIBLE);
+        }
     }
 }
