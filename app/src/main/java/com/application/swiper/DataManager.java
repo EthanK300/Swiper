@@ -9,4 +9,7 @@ import java.util.List;
 public interface DataManager {
     @Query("SELECT * FROM Tasks")
     List<Tasks> getAll();
+
+    @Query("SELECT COUNT(*) AS row_count FROM Tasks")
+    int getTotalNum();
 }

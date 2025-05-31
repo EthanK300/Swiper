@@ -3,7 +3,9 @@ package com.application.swiper;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +40,12 @@ public class MainActivity extends AppCompatActivity {
     TextView noContentMessage;
     AppDatabase db;
     DataManager dm;
-    boolean hasItems = true;
+    boolean hasItems = false;
+    boolean isGuest;
+    List<Tasks> tasksList;
+    SharedPreferences sharedPrefs;
+    SharedPreferences.Editor editor;
+    int currentTab = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -53,10 +60,27 @@ public class MainActivity extends AppCompatActivity {
         title = this.findViewById(R.id.pageTitle);
         noContentMessage = this.findViewById(R.id.noContentMessage);
         frameLayout = this.findViewById(R.id.fragment_container);
+        sharedPrefs = this.getSharedPreferences("tempData", MODE_PRIVATE);
+        editor = sharedPrefs.edit();
 
         System.out.println("session type: " + intent.getStringExtra("type"));
-        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
-        dm = db.dataManager();
+        // open and create database connection if the user is a guest
+        if(intent.getStringExtra("type").equals("guest") || intent.getStringExtra("type").equals("newGuest")){
+            isGuest = true;
+            db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
+            //TODO: fix this so it doesn't block UI thread
+//            dm = db.dataManager();
+//            if (dm.getTotalNum() == 0){
+//                hasItems = false;
+//            }else{
+//                hasItems = true;
+//                tasksList = dm.getAll();
+//
+//            }
+        }else{
+            isGuest = false;
+            // TODO: create web api connection to grab data from online
+        }
 
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
@@ -71,21 +95,34 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("profile clicked");
         });
 
+        int num = sharedPrefs.getInt("currentTab", -1);
+        if(num != -1){
+            currentTab = num;
+            System.out.println("current tab: " + currentTab);
+        }else{
+            System.out.println("no current tab exists via shared");
+            currentTab = 0;
+        }
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        for(String s : labels){
+        for(int i = 0; i < labels.length; i++){
+            String s = labels[i];
             Fragment f = PageFragment.newInstance(s);
             fragments.add(f);
             ft.add(R.id.fragment_container, f);
-            if(s.equals("Calendar")){
-                ft.show(f);
-            }else{
+            if(!s.equals("Calendar")){
                 tabLayout.addTab(tabLayout.newTab().setText(s));
+            }
+            if(i == currentTab){
+                ft.show(f);
+                TabLayout.Tab tab = tabLayout.getTabAt(i);
+                tab.select();
+            }else{
                 ft.hide(f);
             }
         }
         ft.commit();
+
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
-        // TODO: when adding the database calls update the hasItems variable
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
 
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
@@ -106,8 +143,9 @@ public class MainActivity extends AppCompatActivity {
                 for(Fragment f : fragments){
                     ft.hide(f);
                 }
-                System.out.println("pos:" + tab.getPosition());
-                Fragment f = fragments.get(tab.getPosition());
+                currentTab = tab.getPosition();
+                System.out.println("pos:" + currentTab);
+                Fragment f = fragments.get(currentTab);
                 String which = f.getArguments().getString("type", "err");
                 if(which.equals("err")){
                     System.err.println("error fetching args");
@@ -141,5 +179,13 @@ public class MainActivity extends AppCompatActivity {
             frameLayout.setVisibility(GONE);
             noContentMessage.setVisibility(VISIBLE);
         }
+    }
+
+    @Override
+    protected void onDestroy(){
+        editor.putInt("currentTab", currentTab);
+        System.out.println("saving tab: " + currentTab);
+        System.out.println("save success? : " + editor.commit());
+        super.onDestroy();
     }
 }

@@ -29,7 +29,7 @@ public class PageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         // Safely get the argument
         String fragmentType = getArguments().getString("type");
-        System.out.println(fragmentType);
+        System.out.println("created: " + fragmentType);
     }
 
     @Override

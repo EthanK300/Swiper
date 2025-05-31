@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login_activity);
         context = this.getApplicationContext();
         // initialize login helpers
-        sharedPrefs = getPreferences(Context.MODE_PRIVATE);
+        sharedPrefs = this.getSharedPreferences("tempData", Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
         Intent intent = new Intent(this, MainActivity.class);
 
@@ -187,6 +187,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        editor.apply();
+        editor.commit();
     }
 }
