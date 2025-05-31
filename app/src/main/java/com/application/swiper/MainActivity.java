@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.room.Room;
 
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
@@ -28,19 +29,24 @@ public class MainActivity extends AppCompatActivity {
     List<Fragment> fragments = new ArrayList<Fragment>();
     String[] labels = {"Today","This Week", "All"};
     TextView title;
+    AppDatabase db;
+    DataManager dm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         intent = getIntent();
         setContentView(R.layout.main_activity);
-        System.out.println("session type: " + intent.getStringExtra("type"));
         settings = this.findViewById(R.id.settingsgear);
         add = this.findViewById(R.id.add);
         aiAssist = this.findViewById(R.id.aitool);
         profile = this.findViewById(R.id.profile_picture);
         tabLayout = findViewById(R.id.tab_layout);
         title = this.findViewById(R.id.pageTitle);
+
+        System.out.println("session type: " + intent.getStringExtra("type"));
+        db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
+
 
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");

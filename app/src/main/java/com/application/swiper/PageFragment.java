@@ -28,19 +28,21 @@ public class PageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Safely get the argument
-        System.out.println("test");
-        String text = getArguments().getString("type");
+        String userType = getArguments().getString("type");
         LinearLayout container = view.findViewById(R.id.itemContainer);
-        TextView t = view.findViewById(R.id.card_text);
-        t.setText(text);
-        for (int i = 0; i < t.length(); i++) {
+
+        if(userType.equals("newGuest") || userType.equals("newUser")){
             TextView tv = new TextView(getContext());
-            tv.setText("Item " + (i + 1));
+            tv.setText("No tasks yet. Click the + to add some!");
             tv.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             ));
             container.addView(tv);
+        }else if(userType.equals("guest")){
+
+        }else{
+            // call web api to update task list
         }
     }
 
