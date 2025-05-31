@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     ShapeableImageView profile;
     TabLayout tabLayout;
     List<Fragment> fragments = new ArrayList<Fragment>();
-    String[] labels = {"Today","This Week", "All"};
+    String[] labels = {"Today","This Week", "All", "Calendar", "DEFAULT"};
     TextView title;
     AppDatabase db;
     DataManager dm;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         add = this.findViewById(R.id.add);
         aiAssist = this.findViewById(R.id.aitool);
         profile = this.findViewById(R.id.profile_picture);
-        tabLayout = findViewById(R.id.tab_layout);
+        tabLayout = this.findViewById(R.id.tab_layout);
         title = this.findViewById(R.id.pageTitle);
 
         System.out.println("session type: " + intent.getStringExtra("type"));
@@ -63,16 +64,19 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         for(String s : labels){
-            tabLayout.addTab(tabLayout.newTab().setText(s));
             Fragment f = PageFragment.newInstance(s);
             fragments.add(f);
             ft.add(R.id.fragment_container, f);
-            ft.hide(f);
+            if(s.equals("DEFAULT")){
+                ft.show(f);
+            }else if(s.equals("Calendar")){
+                ft.hide(f);
+            }else{
+                tabLayout.addTab(tabLayout.newTab().setText(s));
+                ft.show(f);
+            }
         }
-        Fragment calendar = PageFragment.newInstance("Calendar");
-        fragments.add(calendar);
-        ft.add(R.id.fragment_container, calendar).hide(calendar);
-        ft.show(fragments.get(0)).commit();
+        ft.commit();
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
 
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);

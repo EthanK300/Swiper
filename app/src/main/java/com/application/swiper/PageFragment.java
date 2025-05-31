@@ -26,24 +26,20 @@ public class PageFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         // Safely get the argument
-        String userType = getArguments().getString("type");
-        LinearLayout container = view.findViewById(R.id.itemContainer);
+        String fragmentType = getArguments().getString("type");
+        System.out.println(fragmentType);
 
-        if(userType.equals("newGuest") || userType.equals("newUser")){
+        if(fragmentType.equals("DEFAULT")){
             TextView tv = new TextView(getContext());
-            tv.setText("No tasks yet. Click the + to add some!");
+            tv.setText("No tasks created yet. Click the + to create them!");
             tv.setLayoutParams(new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             ));
-            container.addView(tv);
-        }else if(userType.equals("guest")){
-
-        }else{
-            // call web api to update task list
+            ((LinearLayout)view.findViewById(R.id.itemContainer)).addView(tv);
         }
+
     }
 
     @Override
