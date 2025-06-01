@@ -25,6 +25,8 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     Intent intent;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
     int currentTab = -1;
+    ExecutorService executor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -62,21 +65,26 @@ public class MainActivity extends AppCompatActivity {
         frameLayout = this.findViewById(R.id.fragment_container);
         sharedPrefs = this.getSharedPreferences("tempData", MODE_PRIVATE);
         editor = sharedPrefs.edit();
+        executor = Executors.newSingleThreadExecutor();
+
 
         System.out.println("session type: " + intent.getStringExtra("type"));
         // open and create database connection if the user is a guest
         if(intent.getStringExtra("type").equals("guest") || intent.getStringExtra("type").equals("newGuest")){
+            editor.putBoolean("isLoggedIn", true);
+            editor.commit();
             isGuest = true;
-            db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
-            //TODO: fix this so it doesn't block UI thread
-//            dm = db.dataManager();
-//            if (dm.getTotalNum() == 0){
-//                hasItems = false;
-//            }else{
-//                hasItems = true;
-//                tasksList = dm.getAll();
-//
-//            }
+            // this is a background task thread - for database calls. if need to escape it, use runOnUiThread()
+            executor.execute(() -> {
+                db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
+                dm = db.dataManager();
+                if (dm.getTotalNum() == 0){
+                    hasItems = false;
+                }else{
+                    hasItems = true;
+                    tasksList = dm.getAll();
+                }
+            });
         }else{
             isGuest = false;
             // TODO: create web api connection to grab data from online
