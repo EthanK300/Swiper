@@ -21,6 +21,10 @@ import androidx.room.Room;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
     int currentTab = -1;
+    int prevTab = -1;
     ExecutorService executor;
 
     @Override
@@ -176,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                     title.setText(which);
                 }
                 ft.show(f).commit();
-                updateContentMessage();
+                updateContentView();
             }
 
             @Override
@@ -189,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        updateContentMessage();
+        updateContentView();
     }
 
     @Override
@@ -204,8 +209,26 @@ public class MainActivity extends AppCompatActivity {
         dm.addTask(t);
     }
 
-    protected void updateContentMessage(){
+    protected void updateContentView(){
         if(hasItems){
+
+            if(prevTab == currentTab){
+                return;
+            }
+            switch(currentTab){
+                case 0:     // today
+                    tasksList = getTasksBetweenTimes("today");
+                    break;
+                case 1:     // this week
+                    tasksList = getTasksBetweenTimes("week");
+                    break;
+                case 2:     //all
+                    break;
+                case 3:     //calendar
+                    break;
+                default:
+                    break;
+            }
             frameLayout.setVisibility(VISIBLE);
             noContentMessage.setVisibility(GONE);
         }else{
@@ -217,13 +240,23 @@ public class MainActivity extends AppCompatActivity {
     protected List<Task> getTasksBetweenTimes(String query){
         Long start = new Long(0);
         Long end = new Long(0);
-
+        ZonedDateTime startDate = null;
+        ZonedDateTime endDate = null;
+        LocalDate today = LocalDate.now();
         if(query.equals("today")){
-            
+
+            startDate = today.atStartOfDay(ZoneId.systemDefault());
+            endDate = ZonedDateTime.now();
+
         }else if(query.equals("week")){
+            LocalDate sunday = today.with(DayOfWeek.SUNDAY);
+            LocalDate nextSunday = sunday.plusWeeks(1);
 
+            startDate = sunday.atStartOfDay(ZoneId.systemDefault());
+            endDate = nextSunday.atStartOfDay(ZoneId.systemDefault());
         }
-
+        start = startDate.toInstant().toEpochMilli();
+        end = endDate.toInstant().toEpochMilli();
         return dm.getBetween(start, end);
     }
 }
