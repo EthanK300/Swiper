@@ -5,8 +5,18 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
-public class Tasks {
-    @PrimaryKey
+public class Task {
+    public Task(String name, String description, long timestamp){
+        this.title = name;
+        this.description = description;
+        this.timestamp = timestamp;
+    }
+
+    public Task(){
+
+    }
+
+    @PrimaryKey(autoGenerate = true)
     public int uid;
 
     @ColumnInfo(name = "title")

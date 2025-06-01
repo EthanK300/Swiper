@@ -3,15 +3,14 @@ package com.application.swiper;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,7 +22,6 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     DataManager dm;
     boolean hasItems = false;
     boolean isGuest;
-    List<Tasks> tasksList;
+    List<Task> tasksList;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
     int currentTab = -1;
@@ -80,10 +78,13 @@ public class MainActivity extends AppCompatActivity {
                 dm = db.dataManager();
                 if (dm.getTotalNum() == 0){
                     hasItems = false;
+                    System.out.println("no items loaded");
                 }else{
                     hasItems = true;
                     tasksList = dm.getAll();
+                    System.out.println("items loaded");
                 }
+                System.out.println("database loaded successfully");
             });
         }else{
             isGuest = false;
@@ -93,9 +94,20 @@ public class MainActivity extends AppCompatActivity {
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
         });
+
+        // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
             System.out.println("add clicked");
+            String name = "ab";
+            String description = "ac";
+            long dueDate = 10;
+            Task t = new Task(name, description, dueDate);
+            // TODO: make ui show up for task addition
+            executor.execute(() -> {
+                addTask(t);
+            });
         });
+
         aiAssist.setOnClickListener(v -> {
             System.out.println("aiAssist clicked");
         });
@@ -147,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                // hide existing fragments and show the correct one
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 for(Fragment f : fragments){
                     ft.hide(f);
@@ -154,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
                 currentTab = tab.getPosition();
                 System.out.println("pos:" + currentTab);
                 Fragment f = fragments.get(currentTab);
+
+                // update the title
                 String which = f.getArguments().getString("type", "err");
                 if(which.equals("err")){
                     System.err.println("error fetching args");
@@ -161,13 +176,7 @@ public class MainActivity extends AppCompatActivity {
                     title.setText(which);
                 }
                 ft.show(f).commit();
-                if(hasItems){
-                    frameLayout.setVisibility(VISIBLE);
-                    noContentMessage.setVisibility(GONE);
-                }else{
-                    frameLayout.setVisibility(GONE);
-                    noContentMessage.setVisibility(VISIBLE);
-                }
+                updateContentMessage();
             }
 
             @Override
@@ -180,6 +189,22 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+        updateContentMessage();
+    }
+
+    @Override
+    protected void onDestroy(){
+        editor.putInt("currentTab", currentTab);
+        System.out.println("saving tab: " + currentTab);
+        System.out.println("save success? : " + editor.commit());
+        super.onDestroy();
+    }
+
+    protected void addTask(Task t){
+        dm.addTask(t);
+    }
+
+    protected void updateContentMessage(){
         if(hasItems){
             frameLayout.setVisibility(VISIBLE);
             noContentMessage.setVisibility(GONE);
@@ -189,11 +214,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy(){
-        editor.putInt("currentTab", currentTab);
-        System.out.println("saving tab: " + currentTab);
-        System.out.println("save success? : " + editor.commit());
-        super.onDestroy();
+    protected List<Task> getTasksBetweenTimes(String query){
+        Long start = new Long(0);
+        Long end = new Long(0);
+
+        if(query.equals("today")){
+            
+        }else if(query.equals("week")){
+
+        }
+
+        return dm.getBetween(start, end);
     }
 }
