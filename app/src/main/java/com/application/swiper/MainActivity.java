@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     TextView title;
     TextView noContentMessage;
     RecyclerView item_container;
+    TaskAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         item_container.setLayoutManager(new LinearLayoutManager(this));
-        TaskAdapter adapter = new TaskAdapter(tasksList);
+        adapter = new TaskAdapter(tasksList);
         item_container.setAdapter(adapter);
 
         settings.setOnClickListener(v -> {
@@ -124,9 +125,7 @@ public class MainActivity extends AppCompatActivity {
             long dueDate = 10;
             Task t = new Task(name, description, dueDate);
             // TODO: make ui show up for task addition
-            executor.execute(() -> {
-                addTask(t);
-            });
+            addTask(t);
         });
 
         aiAssist.setOnClickListener(v -> {
@@ -164,15 +163,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 currentTab = tab.getPosition();
-                // hide existing fragments and show the correct one
+                // hide views that are out of the time range
                 if(tab.getPosition() == 0){             // today
-
+                    System.out.println("selected tab today");
                 }else if(tab.getPosition() == 1){       // this week
-
+                    System.out.println("selected tab this week");
                 }else if(tab.getPosition() == 2){        // all
-
+                    System.out.println("selected tab all");
                 }else if(tab.getPosition() == 3){       // calendar
-
+                    System.out.println("selected tab calendar");
                 }else{
                     System.err.println("error reading tab position");
                 }
@@ -207,7 +206,13 @@ public class MainActivity extends AppCompatActivity {
 
     protected void addTask(Task t){
         tasksList.add(t);
-        dm.addTask(t);
+        adapter.notifyDataSetChanged();
+        executor.execute(() -> {
+            dm.addTask(t);
+        });
+//        updateContentView();
+        // TODO: use this to bind to the recyclerview so that showntasks is used as the thing to show
+        // and so that updateContentView is able to handle it
     }
 
     protected void updateContentView(){
