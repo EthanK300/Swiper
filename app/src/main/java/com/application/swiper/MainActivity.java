@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         executor = Executors.newSingleThreadExecutor();
         item_container = this.findViewById(R.id.item_container);
         tasksList = new ArrayList<Task>();
+        shownTasks = new ArrayList<Task>();
 
         for(int i = 0; i < labels.length; i++){
             String s = labels[i];
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         item_container.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new TaskAdapter(tasksList);
+        adapter = new TaskAdapter(shownTasks);
         item_container.setAdapter(adapter);
 
         settings.setOnClickListener(v -> {
@@ -119,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
-            System.out.println("add clicked");
-            String name = "ab";
-            String description = "ac";
-            long dueDate = 10;
-            Task t = new Task(name, description, dueDate);
+            long timestamp = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            String name = ((Long)timestamp).toString();
+            String description = name + ":desc";
+
+            Task t = new Task(name, description, timestamp);
             // TODO: make ui show up for task addition
             addTask(t);
         });
@@ -206,40 +207,45 @@ public class MainActivity extends AppCompatActivity {
 
     protected void addTask(Task t){
         tasksList.add(t);
-        adapter.notifyDataSetChanged();
         executor.execute(() -> {
             dm.addTask(t);
         });
-//        updateContentView();
+        updateContentView();
         // TODO: use this to bind to the recyclerview so that showntasks is used as the thing to show
         // and so that updateContentView is able to handle it
     }
 
     protected void updateContentView(){
+        System.out.println("updating content");
         // TODO: need to dynamically add textviews
-        if(hasItems){
-            if(prevTab == currentTab){
-                return;
-            }
-            switch(currentTab){
-                case 0:     // today
-                    getTasksBetweenTimes("today");
-                    break;
-                case 1:     // this week
-                    getTasksBetweenTimes("week");
-                    break;
-                case 2:     //all
-                    break;
-                case 3:     //calendar
-                    break;
-                default:
-                    break;
-            }
-            // re-add the textviews
-            noContentMessage.setVisibility(GONE);
-        }else{
-            noContentMessage.setVisibility(VISIBLE);
+        if(prevTab == currentTab){
+            return;
         }
+        switch(currentTab){
+            case 0:     // today
+                getTasksBetweenTimes("today");
+                break;
+            case 1:     // this week
+                getTasksBetweenTimes("week");
+                break;
+            case 2:     //all
+                shownTasks.clear();
+                shownTasks.addAll(tasksList);
+                break;
+            case 3:     //calendar
+                break;
+            default:
+                break;
+        }
+        if(shownTasks.size() == 0){
+            hasItems = false;
+            noContentMessage.setVisibility(VISIBLE);
+        }else{
+            hasItems = true;
+            noContentMessage.setVisibility(GONE);
+        }
+        adapter.notifyDataSetChanged();
+        System.out.println("showing: " + shownTasks.size() + ", all task list size: " + tasksList.size());
     }
 
     protected void getTasksBetweenTimes(String query){
@@ -250,11 +256,12 @@ public class MainActivity extends AppCompatActivity {
         ZonedDateTime endDate = null;
         LocalDate today = LocalDate.now();
         if(query.equals("today")){
-
+            System.out.println("finding tasks within range today");
             startDate = today.atStartOfDay(ZoneId.systemDefault());
             endDate = ZonedDateTime.now();
 
         }else if(query.equals("week")){
+            System.out.println("finding tasks within range week");
             LocalDate sunday = today.with(DayOfWeek.SUNDAY);
             LocalDate nextSunday = sunday.plusWeeks(1);
 
