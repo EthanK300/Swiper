@@ -6,21 +6,20 @@ import static android.view.View.VISIBLE;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
+import java.sql.Array;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,26 +31,29 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     Intent intent;
+    SharedPreferences sharedPrefs;
+    SharedPreferences.Editor editor;
+    ExecutorService executor;
+    AppDatabase db;
+    DataManager dm;
+
+    String[] labels = {"Today","This Week", "All", "Calendar"};
+    boolean hasItems = false;
+    boolean isGuest;
+    int currentTab = -1;
+    int prevTab = -1;
+    List<Task> tasksList;
+    List<Task> shownTasks;
+
     ImageButton settings;
     ImageButton add;
     ImageButton aiAssist;
     ShapeableImageView profile;
     TabLayout tabLayout;
-    FrameLayout frameLayout;
-    List<Fragment> fragments = new ArrayList<Fragment>();
-    String[] labels = {"Today","This Week", "All", "Calendar"};
     TextView title;
     TextView noContentMessage;
-    AppDatabase db;
-    DataManager dm;
-    boolean hasItems = false;
-    boolean isGuest;
-    List<Task> tasksList;
-    SharedPreferences sharedPrefs;
-    SharedPreferences.Editor editor;
-    int currentTab = -1;
-    int prevTab = -1;
-    ExecutorService executor;
+    RecyclerView item_container;
+    TaskAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -65,11 +67,23 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = this.findViewById(R.id.tab_layout);
         title = this.findViewById(R.id.pageTitle);
         noContentMessage = this.findViewById(R.id.noContentMessage);
-        frameLayout = this.findViewById(R.id.fragment_container);
         sharedPrefs = this.getSharedPreferences("tempData", MODE_PRIVATE);
         editor = sharedPrefs.edit();
         executor = Executors.newSingleThreadExecutor();
+        item_container = this.findViewById(R.id.item_container);
+        tasksList = new ArrayList<Task>();
+        shownTasks = new ArrayList<Task>();
 
+        for(int i = 0; i < labels.length; i++){
+            String s = labels[i];
+            if(!s.equals("Calendar")){
+                tabLayout.addTab(tabLayout.newTab().setText(s));
+            }
+            if(i == currentTab){
+                TabLayout.Tab tab = tabLayout.getTabAt(i);
+                tab.select();
+            }
+        }
 
         System.out.println("session type: " + intent.getStringExtra("type"));
         // open and create database connection if the user is a guest
@@ -96,21 +110,23 @@ public class MainActivity extends AppCompatActivity {
             // TODO: create web api connection to grab data from online
         }
 
+        item_container.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new TaskAdapter(shownTasks);
+        item_container.setAdapter(adapter);
+
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
         });
 
         // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
-            System.out.println("add clicked");
-            String name = "ab";
-            String description = "ac";
-            long dueDate = 10;
-            Task t = new Task(name, description, dueDate);
+            long timestamp = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            String name = ((Long)timestamp).toString();
+            String description = name + ":desc";
+
+            Task t = new Task(name, description, timestamp);
             // TODO: make ui show up for task addition
-            executor.execute(() -> {
-                addTask(t);
-            });
+            addTask(t);
         });
 
         aiAssist.setOnClickListener(v -> {
@@ -128,24 +144,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("no current tab exists via shared");
             currentTab = 0;
         }
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        for(int i = 0; i < labels.length; i++){
-            String s = labels[i];
-            Fragment f = PageFragment.newInstance(s);
-            fragments.add(f);
-            ft.add(R.id.fragment_container, f);
-            if(!s.equals("Calendar")){
-                tabLayout.addTab(tabLayout.newTab().setText(s));
-            }
-            if(i == currentTab){
-                ft.show(f);
-                TabLayout.Tab tab = tabLayout.getTabAt(i);
-                tab.select();
-            }else{
-                ft.hide(f);
-            }
-        }
-        ft.commit();
+        //TODO: put here the code that updates which set of tasks is shown based on the tablayout
 
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
@@ -164,24 +163,19 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                // hide existing fragments and show the correct one
-                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                for(Fragment f : fragments){
-                    ft.hide(f);
-                }
                 currentTab = tab.getPosition();
-                System.out.println("pos:" + currentTab);
-                Fragment f = fragments.get(currentTab);
-
-                // update the title
-                String which = f.getArguments().getString("type", "err");
-                if(which.equals("err")){
-                    System.err.println("error fetching args");
+                // hide views that are out of the time range
+                if(tab.getPosition() == 0){             // today
+                    System.out.println("selected tab today");
+                }else if(tab.getPosition() == 1){       // this week
+                    System.out.println("selected tab this week");
+                }else if(tab.getPosition() == 2){        // all
+                    System.out.println("selected tab all");
+                }else if(tab.getPosition() == 3){       // calendar
+                    System.out.println("selected tab calendar");
                 }else{
-                    title.setText(which);
+                    System.err.println("error reading tab position");
                 }
-                ft.show(f).commit();
-                updateContentView();
             }
 
             @Override
@@ -205,50 +199,69 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    protected void onPause(){
+        syncToDatabase();
+        super.onPause();
+    }
+
     protected void addTask(Task t){
-        dm.addTask(t);
+        tasksList.add(t);
+        executor.execute(() -> {
+            dm.addTask(t);
+        });
+        updateContentView();
+        // TODO: use this to bind to the recyclerview so that showntasks is used as the thing to show
+        // and so that updateContentView is able to handle it
     }
 
     protected void updateContentView(){
-        if(hasItems){
-
-            if(prevTab == currentTab){
-                return;
-            }
-            switch(currentTab){
-                case 0:     // today
-                    tasksList = getTasksBetweenTimes("today");
-                    break;
-                case 1:     // this week
-                    tasksList = getTasksBetweenTimes("week");
-                    break;
-                case 2:     //all
-                    break;
-                case 3:     //calendar
-                    break;
-                default:
-                    break;
-            }
-            frameLayout.setVisibility(VISIBLE);
-            noContentMessage.setVisibility(GONE);
-        }else{
-            frameLayout.setVisibility(GONE);
-            noContentMessage.setVisibility(VISIBLE);
+        System.out.println("updating content");
+        // TODO: need to dynamically add textviews
+        if(prevTab == currentTab){
+            return;
         }
+        switch(currentTab){
+            case 0:     // today
+                getTasksBetweenTimes("today");
+                break;
+            case 1:     // this week
+                getTasksBetweenTimes("week");
+                break;
+            case 2:     //all
+                shownTasks.clear();
+                shownTasks.addAll(tasksList);
+                break;
+            case 3:     //calendar
+                break;
+            default:
+                break;
+        }
+        if(shownTasks.size() == 0){
+            hasItems = false;
+            noContentMessage.setVisibility(VISIBLE);
+        }else{
+            hasItems = true;
+            noContentMessage.setVisibility(GONE);
+        }
+        adapter.notifyDataSetChanged();
+        System.out.println("showing: " + shownTasks.size() + ", all task list size: " + tasksList.size());
     }
 
-    protected List<Task> getTasksBetweenTimes(String query){
+    protected void getTasksBetweenTimes(String query){
+        // today < week < all
         Long start = new Long(0);
         Long end = new Long(0);
         ZonedDateTime startDate = null;
         ZonedDateTime endDate = null;
         LocalDate today = LocalDate.now();
         if(query.equals("today")){
-
+            System.out.println("finding tasks within range today");
             startDate = today.atStartOfDay(ZoneId.systemDefault());
             endDate = ZonedDateTime.now();
 
         }else if(query.equals("week")){
+            System.out.println("finding tasks within range week");
             LocalDate sunday = today.with(DayOfWeek.SUNDAY);
             LocalDate nextSunday = sunday.plusWeeks(1);
 
@@ -257,6 +270,17 @@ public class MainActivity extends AppCompatActivity {
         }
         start = startDate.toInstant().toEpochMilli();
         end = endDate.toInstant().toEpochMilli();
-        return dm.getBetween(start, end);
+        shownTasks.clear();
+        for(int i = 0; i < tasksList.size(); i++){
+            long time = tasksList.get(i).timestamp;
+            if(time > start && time < end){
+                shownTasks.add(tasksList.get(i));
+                // within range, display task
+            }
+        }
+    }
+
+    protected void syncToDatabase(){
+        // sync current task list to database
     }
 }
