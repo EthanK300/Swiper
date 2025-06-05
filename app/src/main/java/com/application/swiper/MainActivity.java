@@ -21,9 +21,12 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.sql.Array;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -120,10 +123,10 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
-            long timestamp = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            long timestamp = Instant.now().toEpochMilli();
             String name = ((Long)timestamp).toString();
             String description = name + ":desc";
-
+            System.out.println("timestamp for add: " + timestamp);
             Task t = new Task(name, description, timestamp);
             // TODO: make ui show up for task addition
             addTask(t);
@@ -131,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
 
         aiAssist.setOnClickListener(v -> {
             System.out.println("aiAssist clicked");
+            // temporary testing for times
+            tasksList.get(0).timestamp = 0;
+            updateContentView();
         });
         profile.setOnClickListener(v -> {
             System.out.println("profile clicked");
@@ -176,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     System.err.println("error reading tab position");
                 }
+                updateContentView();
             }
 
             @Override
@@ -256,28 +263,27 @@ public class MainActivity extends AppCompatActivity {
         ZonedDateTime endDate = null;
         LocalDate today = LocalDate.now();
         if(query.equals("today")){
-            System.out.println("finding tasks within range today");
             startDate = today.atStartOfDay(ZoneId.systemDefault());
-            endDate = ZonedDateTime.now();
-
+            endDate = today.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault());
         }else if(query.equals("week")){
-            System.out.println("finding tasks within range week");
-            LocalDate sunday = today.with(DayOfWeek.SUNDAY);
-            LocalDate nextSunday = sunday.plusWeeks(1);
-
-            startDate = sunday.atStartOfDay(ZoneId.systemDefault());
-            endDate = nextSunday.atStartOfDay(ZoneId.systemDefault());
+            startDate = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atStartOfDay().atZone(ZoneId.systemDefault());
+            endDate = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY)).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault());
         }
         start = startDate.toInstant().toEpochMilli();
         end = endDate.toInstant().toEpochMilli();
+        System.out.println("start: " + start);
+        System.out.println("end: " + end);
         shownTasks.clear();
+        System.out.println("cleaning shownTasks list");
         for(int i = 0; i < tasksList.size(); i++){
             long time = tasksList.get(i).timestamp;
+            System.out.println("testing time: " + time);
             if(time > start && time < end){
                 shownTasks.add(tasksList.get(i));
                 // within range, display task
             }
         }
+        System.out.println("new shownTasks list: " + shownTasks.size());
     }
 
     protected void syncToDatabase(){
