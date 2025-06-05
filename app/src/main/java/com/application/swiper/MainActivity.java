@@ -223,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void updateContentView(){
-        System.out.println("updating content");
         // TODO: need to dynamically add textviews
         if(prevTab == currentTab){
             return;
@@ -271,19 +270,16 @@ public class MainActivity extends AppCompatActivity {
         }
         start = startDate.toInstant().toEpochMilli();
         end = endDate.toInstant().toEpochMilli();
-        System.out.println("start: " + start);
-        System.out.println("end: " + end);
         shownTasks.clear();
         System.out.println("cleaning shownTasks list");
         for(int i = 0; i < tasksList.size(); i++){
             long time = tasksList.get(i).timestamp;
-            System.out.println("testing time: " + time);
             if(time > start && time < end){
                 shownTasks.add(tasksList.get(i));
                 // within range, display task
             }
         }
-        System.out.println("new shownTasks list: " + shownTasks.size());
+        System.out.println("new shownTasks list size: " + shownTasks.size());
     }
 
     protected void syncToDatabase(){
