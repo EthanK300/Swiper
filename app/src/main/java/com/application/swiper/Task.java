@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class Task {
-    public Task(String name, String description, long timestamp){
+    public Task(String name, String description, long dueDate){
         this.title = name;
         this.description = description;
-        this.timestamp = timestamp;
+        this.dueDate = dueDate;
     }
 
     public Task(){
@@ -25,6 +25,6 @@ public class Task {
     @ColumnInfo(name = "description")
     public String description;
 
-    @ColumnInfo(name = "timestamp")
-    public long timestamp;
+    @ColumnInfo(name = "dueDate")
+    public long dueDate;
 }

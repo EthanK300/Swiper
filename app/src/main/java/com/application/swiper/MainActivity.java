@@ -19,7 +19,6 @@ import androidx.room.Room;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
-import java.sql.Array;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener{
     Intent intent;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -124,19 +123,17 @@ public class MainActivity extends AppCompatActivity {
         // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
             long timestamp = Instant.now().toEpochMilli();
-            String name = ((Long)timestamp).toString();
-            String description = name + ":desc";
             System.out.println("timestamp for add: " + timestamp);
-            Task t = new Task(name, description, timestamp);
-            // TODO: make ui show up for task addition
-            addTask(t);
-            new CreateFormSheet().show(getSupportFragmentManager(), "formSheet");
+
+            CreateFormSheet c = new CreateFormSheet();
+            c.show(getSupportFragmentManager(), "formSheet");
+
         });
 
         aiAssist.setOnClickListener(v -> {
             System.out.println("aiAssist clicked");
             // temporary testing for times
-            tasksList.get(0).timestamp = 0;
+            tasksList.get(0).dueDate = 0;
             updateContentView();
         });
         profile.setOnClickListener(v -> {
@@ -244,14 +241,14 @@ public class MainActivity extends AppCompatActivity {
             default:
                 break;
         }
-        if(shownTasks.size() == 0){
+        if(shownTasks.isEmpty()){
             hasItems = false;
             noContentMessage.setVisibility(VISIBLE);
         }else{
             hasItems = true;
             noContentMessage.setVisibility(GONE);
         }
-        adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();     // TODO: make this better / more efficient
         System.out.println("showing: " + shownTasks.size() + ", all task list size: " + tasksList.size());
     }
 
@@ -274,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
         shownTasks.clear();
         System.out.println("cleaning shownTasks list");
         for(int i = 0; i < tasksList.size(); i++){
-            long time = tasksList.get(i).timestamp;
+            long time = tasksList.get(i).dueDate;
             if(time > start && time < end){
                 shownTasks.add(tasksList.get(i));
                 // within range, display task
@@ -282,8 +279,17 @@ public class MainActivity extends AppCompatActivity {
         }
         System.out.println("new shownTasks list size: " + shownTasks.size());
     }
+    @Override
+    public void onFormSubmitted(String name, String description, long dueDate) {
+        System.out.println("received data from form in mainactivity");
+        Task t = new Task(name, description, dueDate);
+        // TODO: make ui show up for task addition
+        addTask(t);
+    }
 
     protected void syncToDatabase(){
         // sync current task list to database
     }
+
+
 }

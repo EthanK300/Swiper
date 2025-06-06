@@ -13,7 +13,7 @@ public interface DataManager {
     @Query("SELECT * FROM Task")
     List<Task> getAll();
 
-    @Query("SELECT * FROM Task WHERE timestamp BETWEEN :start AND :end")
+    @Query("SELECT * FROM Task WHERE dueDate BETWEEN :start AND :end")
     List<Task> getBetween(long start, long end);
 
     @Query("SELECT COUNT(*) AS row_count FROM Task")

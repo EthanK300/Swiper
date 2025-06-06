@@ -15,6 +15,7 @@ public class TaskView extends RecyclerView.ViewHolder{
 
     public void bindData(){
         // TODO: take data from task object and stick it into textviews for user
-        t.setText(data.title + " : " + data.description);
+        String text = data.title + " : " + data.description;
+        t.setText(text);
     }
 }
