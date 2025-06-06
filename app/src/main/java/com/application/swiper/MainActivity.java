@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
             Task t = new Task(name, description, timestamp);
             // TODO: make ui show up for task addition
             addTask(t);
+            new CreateFormSheet().show(getSupportFragmentManager(), "formSheet");
         });
 
         aiAssist.setOnClickListener(v -> {
