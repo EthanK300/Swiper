@@ -12,12 +12,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
+    String urlString = "http://localhost:8000/test";    // TODO: when testing, replace this and the one in network_securityconfig.xml with the right address
     String pageOn = "start"; // start, login, register
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -41,6 +51,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText registerPassword;
     EditText registercPassword;
     TextView cpasswordPrompt;
+    OkHttpClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -51,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
         sharedPrefs = this.getSharedPreferences("tempData", Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
         Intent intent = new Intent(this, MainActivity.class);
+        client = new OkHttpClient();
 
         // initialize main application activity based on login status
         if(sharedPrefs != null && sharedPrefs.getBoolean("isLoggedIn", false)){
@@ -62,6 +74,8 @@ public class LoginActivity extends AppCompatActivity {
                 intent.putExtra("username",sharedPrefs.getString("accountid", "null"));
                 intent.putExtra("password", sharedPrefs.getString("password", "null"));
                 // TODO: change this to a more secure local session storage alternative
+
+
             }else{
                 // guest account already exists
                 intent.putExtra("type", "guest");
@@ -165,6 +179,7 @@ public class LoginActivity extends AppCompatActivity {
                 String user = loginUserEmail.getText().toString();
                 String password = loginUserPassword.getText().toString();
                 System.out.println("entered with user: " + user + ", password: " + password);
+                testGetRequest();
             }else if(pageOn.equals("register")){
                 // attempt to create new account
                 String user = registerUsername.getText().toString();
@@ -179,7 +194,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 if(verify("email", email) && verify("username", "user")){
                     // all good, send web request and log in
-                    
+
                 }
             }
         });
@@ -209,6 +224,24 @@ public class LoginActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         editor.commit();
+    }
+
+    public void testGetRequest(){
+        Request request = new Request.Builder()
+                .url(urlString)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println("couldn't get response");
+            }
+        });
     }
 
     protected boolean verify(String toTest, String arg){
