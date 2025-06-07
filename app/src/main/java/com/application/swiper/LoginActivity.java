@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -38,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText registerEmail;
     EditText registerPassword;
     EditText registercPassword;
+    TextView cpasswordPrompt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -85,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
         registerEmail = this.findViewById(R.id.register_email_input);
         registerPassword = this.findViewById(R.id.register_password_input);
         registercPassword = this.findViewById(R.id.register_cpassword_input);
+        cpasswordPrompt = this.findViewById(R.id.register_cpassword_prompt);
 
         loginSet = new ConstraintSet();
         loginSet.clone(main);
@@ -158,11 +162,25 @@ public class LoginActivity extends AppCompatActivity {
             System.out.println("continue button clicked");
             if(pageOn.equals("login")){
                 // attempt to login
-                String user = ((EditText)this.findViewById(R.id.user_login_input)).getText().toString();
-                String password = ((EditText)this.findViewById(R.id.user_password_input)).getText().toString();
+                String user = loginUserEmail.getText().toString();
+                String password = loginUserPassword.getText().toString();
                 System.out.println("entered with user: " + user + ", password: " + password);
             }else if(pageOn.equals("register")){
                 // attempt to create new account
+                String user = registerUsername.getText().toString();
+                String email = registerEmail.getText().toString();
+                String password = registerPassword.getText().toString();
+                String cpassword = registercPassword.getText().toString();
+                // run validation on account
+                if(!password.equals(cpassword)){
+                    // don't allow, passwords don't match
+                    cpasswordPrompt.setText("Confirm Password (passwords must match)");
+                    return;
+                }
+                if(verify("email", email) && verify("username", "user")){
+                    // all good, send web request and log in
+                    
+                }
             }
         });
 
@@ -191,5 +209,28 @@ public class LoginActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         editor.commit();
+    }
+
+    protected boolean verify(String toTest, String arg){
+        if(arg.equals("email")){
+            // ensure email is formatted correctly
+            boolean containsAt = false;
+            for(int i = 0; i < toTest.length(); i++){
+                if(toTest.charAt(i) == '@'){
+                    containsAt = true;
+                }else if(!Character.isLetterOrDigit(toTest.charAt(i))){
+                    return false;
+                }
+            }
+            return containsAt;
+        }else{
+            //ensure username is formatted correctly
+            for(int i = 0; i < toTest.length(); i++){
+                if(!Character.isLetterOrDigit(toTest.charAt(i))){
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
