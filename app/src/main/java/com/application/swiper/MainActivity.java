@@ -5,6 +5,7 @@ import static android.view.View.VISIBLE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -120,14 +121,11 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             System.out.println("settings clicked");
         });
 
-        // TODO: finish the ui part of this
         add.setOnClickListener(v -> {
             long timestamp = Instant.now().toEpochMilli();
             System.out.println("timestamp for add: " + timestamp);
-
             CreateFormSheet c = new CreateFormSheet();
             c.show(getSupportFragmentManager(), "formSheet");
-
         });
 
         aiAssist.setOnClickListener(v -> {
@@ -159,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             params.setMargins(0, 0, 0, 0); // Left and right margin
             tabView.setPadding(0, 0, 0, 0);
             tabView.requestLayout();
-
+            tabView.setBackgroundColor(Color.WHITE);
         }
 
         // Handle tab switching
@@ -168,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 currentTab = tab.getPosition();
+                tab.view.setBackgroundColor(Color.BLUE);
                 // hide views that are out of the time range
                 if(tab.getPosition() == 0){             // today
                     System.out.println("selected tab today");
@@ -185,7 +184,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
+                View v = tab.view;
+                v.setBackgroundColor(Color.WHITE);
             }
 
             @Override

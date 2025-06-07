@@ -158,6 +158,9 @@ public class LoginActivity extends AppCompatActivity {
             System.out.println("continue button clicked");
             if(pageOn.equals("login")){
                 // attempt to login
+                String user = ((EditText)this.findViewById(R.id.user_login_input)).getText().toString();
+                String password = ((EditText)this.findViewById(R.id.user_password_input)).getText().toString();
+                System.out.println("entered with user: " + user + ", password: " + password);
             }else if(pageOn.equals("register")){
                 // attempt to create new account
             }
