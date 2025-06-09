@@ -50,7 +50,13 @@ public class LoginActivity extends AppCompatActivity {
     EditText registerEmail;
     EditText registerPassword;
     EditText registercPassword;
-    TextView cpasswordPrompt;
+    TextView loginUserPrompt;
+    TextView loginPasswordPrompt;
+    TextView registerUserPrompt;
+    TextView registerEmailPrompt;
+    TextView registerPasswordPrompt;
+    TextView registercPasswordPrompt;
+
     OkHttpClient client;
 
     @Override
@@ -96,13 +102,21 @@ public class LoginActivity extends AppCompatActivity {
         loginGroup = this.findViewById(R.id.login_group);
         registerGroup = this.findViewById(R.id.register_group);
         options = this.findViewById(R.id.options);
+
+        loginUserPrompt = this.findViewById(R.id.user_login_prompt);
         loginUserEmail = this.findViewById(R.id.user_login_input);
+        loginPasswordPrompt = this.findViewById(R.id.user_password_prompt);
         loginUserPassword = this.findViewById(R.id.user_password_input);
+
         registerUsername = this.findViewById(R.id.register_user_input);
+        registerUserPrompt = this.findViewById(R.id.register_user_prompt);
+        registerPasswordPrompt = this.findViewById(R.id.register_cpassword_prompt);
+        registerEmailPrompt = this.findViewById(R.id.register_email_prompt);
         registerEmail = this.findViewById(R.id.register_email_input);
         registerPassword = this.findViewById(R.id.register_password_input);
+        registerPasswordPrompt = this.findViewById(R.id.register_password_prompt);
         registercPassword = this.findViewById(R.id.register_cpassword_input);
-        cpasswordPrompt = this.findViewById(R.id.register_cpassword_prompt);
+        registercPasswordPrompt = this.findViewById(R.id.register_cpassword_prompt);
 
         loginSet = new ConstraintSet();
         loginSet.clone(main);
@@ -179,22 +193,40 @@ public class LoginActivity extends AppCompatActivity {
                 String user = loginUserEmail.getText().toString();
                 String password = loginUserPassword.getText().toString();
                 System.out.println("entered with user: " + user + ", password: " + password);
-                testGetRequest();
+                if(user.equals("")){
+                    loginUserPrompt.setText("Username/Email (must not be blank)");
+                    return;
+                }else if(password.equals("")){
+                    loginPasswordPrompt.setText("Password (must not be blank)");
+                    return;
+                }
+                authLogin(user, password);
             }else if(pageOn.equals("register")){
                 // attempt to create new account
                 String user = registerUsername.getText().toString();
                 String email = registerEmail.getText().toString();
                 String password = registerPassword.getText().toString();
                 String cpassword = registercPassword.getText().toString();
+
+                if(user.equals("")){
+                    registerUserPrompt.setText("Username (must not be blank)");
+                    return;
+                }else if(email.equals("")){
+                    registerEmailPrompt.setText("Email (must not be blank)");
+                    return;
+                }else if(password.equals("")){
+                    registerPasswordPrompt.setText("Password (must not be blank)");
+                    return;
+                }
                 // run validation on account
                 if(!password.equals(cpassword)){
                     // don't allow, passwords don't match
-                    cpasswordPrompt.setText("Confirm Password (passwords must match)");
+                    registercPasswordPrompt.setText("Confirm Password (passwords must match)");
                     return;
                 }
                 if(verify("email", email) && verify("username", "user")){
                     // all good, send web request and log in
-
+                    authRegister(user, email, password);
                 }
             }
         });
@@ -242,6 +274,29 @@ public class LoginActivity extends AppCompatActivity {
                 System.out.println("couldn't get response");
             }
         });
+    }
+
+    protected void authLogin(String user, String password){
+
+        Request request = new Request.Builder()
+                .url(urlString)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println("couldn't get response");
+            }
+        });
+    }
+
+    protected void authRegister(String user, String email, String password){
+
     }
 
     protected boolean verify(String toTest, String arg){
