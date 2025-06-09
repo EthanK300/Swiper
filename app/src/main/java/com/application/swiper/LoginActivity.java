@@ -21,16 +21,20 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
-    String urlString = "http://localhost:8000/test";    // TODO: when testing, replace this and the one in network_securityconfig.xml with the right address
+    String urlString = "http://localhost:8000";    // TODO: when testing, replace this and the one in network_securityconfig.xml with the right address
     String pageOn = "start"; // start, login, register
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
+    OkHttpClient client;
+    Intent intent;
     Context context;
     Button loginButton;
     Button createButton;
@@ -57,8 +61,6 @@ public class LoginActivity extends AppCompatActivity {
     TextView registerPasswordPrompt;
     TextView registercPasswordPrompt;
 
-    OkHttpClient client;
-
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -67,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         // initialize login helpers
         sharedPrefs = this.getSharedPreferences("tempData", Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
-        Intent intent = new Intent(this, MainActivity.class);
+        intent = new Intent(this, MainActivity.class);
         client = new OkHttpClient();
 
         // initialize main application activity based on login status
@@ -260,7 +262,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void testGetRequest(){
         Request request = new Request.Builder()
-                .url(urlString)
+                .url(urlString + "/test")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -277,15 +279,28 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     protected void authLogin(String user, String password){
+        RequestBody requestBody = new FormBody.Builder()
+                .add("username", user)
+                .add("password", password)
+                .build();
 
         Request request = new Request.Builder()
-                .url(urlString)
+                .url(urlString + "/login")
+                .post(requestBody)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) {
                 System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+                if(response.isSuccessful()){
+                    System.out.println("logged in successfully");
+                    runOnUiThread(() -> {
+                        startActivity(intent);
+                    });
+                }else{
+                    System.err.println("server response return error on auth login");
+                }
             }
 
             @Override
@@ -296,7 +311,36 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     protected void authRegister(String user, String email, String password){
+        RequestBody requestBody = new FormBody.Builder()
+                .add("username", user)
+                .add("email", email)
+                .add("password", password)
+                .build();
 
+        Request request = new Request.Builder()
+                .url(urlString + "/register")
+                .post(requestBody)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+                if(response.isSuccessful()){
+                    // good
+                    System.out.println("registered successfully");
+                    runOnUiThread(() -> {
+                        startActivity(intent);
+                    });
+                }else{
+                    System.err.println("server response return error on auth register");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println("couldn't get response");
+            }
+        });
     }
 
     protected boolean verify(String toTest, String arg){
