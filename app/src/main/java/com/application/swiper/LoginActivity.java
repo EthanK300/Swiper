@@ -195,11 +195,20 @@ public class LoginActivity extends AppCompatActivity {
                 String user = loginUserEmail.getText().toString();
                 String password = loginUserPassword.getText().toString();
                 System.out.println("entered with user: " + user + ", password: " + password);
+                boolean exit = false;
                 if(user.equals("")){
                     loginUserPrompt.setText("Username/Email (must not be blank)");
-                    return;
-                }else if(password.equals("")){
+                    exit = true;
+                }else{
+                    loginUserPrompt.setText("Username/Email");
+                }
+                if(password.equals("")){
                     loginPasswordPrompt.setText("Password (must not be blank)");
+                    exit = true;
+                }else{
+                    loginPasswordPrompt.setText("Password");
+                }
+                if(exit){
                     return;
                 }
                 authLogin(user, password);
@@ -209,26 +218,46 @@ public class LoginActivity extends AppCompatActivity {
                 String email = registerEmail.getText().toString();
                 String password = registerPassword.getText().toString();
                 String cpassword = registercPassword.getText().toString();
+                boolean exit = false;
 
                 if(user.equals("")){
                     registerUserPrompt.setText("Username (must not be blank)");
-                    return;
-                }else if(email.equals("")){
+                    exit = true;
+                }else{
+                    registerUserPrompt.setText("Username");
+                }
+                if(email.equals("")){
                     registerEmailPrompt.setText("Email (must not be blank)");
-                    return;
-                }else if(password.equals("")){
+                    exit = true;
+                }else{
+                    registerEmailPrompt.setText("Email");
+                }
+                if(password.equals("")){
                     registerPasswordPrompt.setText("Password (must not be blank)");
-                    return;
+                    exit = true;
+                }else{
+                    registerPasswordPrompt.setText("Password");
                 }
                 // run validation on account
                 if(!password.equals(cpassword)){
                     // don't allow, passwords don't match
                     registercPasswordPrompt.setText("Confirm Password (passwords must match)");
+                    exit = true;
+                }else{
+                    registercPasswordPrompt.setText("Confirm Password");
+                }
+                if(exit){
                     return;
                 }
-                if(verify("email", email) && verify("username", "user")){
+                if(verify("email", email)){
                     // all good, send web request and log in
-                    authRegister(user, email, password);
+                    if(verify("username", user)){
+                        authRegister(user, email, password);
+                    }else{
+                        registerUserPrompt.setText("Username (must not contain special characters");
+                    }
+                }else{
+                    registerEmailPrompt.setText("Email (must not contain special characters)");
                 }
             }
         });
@@ -258,24 +287,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         editor.commit();
-    }
-
-    public void testGetRequest(){
-        Request request = new Request.Builder()
-                .url(urlString + "/test")
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) {
-                System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
-            }
-
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                System.out.println("couldn't get response");
-            }
-        });
     }
 
     protected void authLogin(String user, String password){
