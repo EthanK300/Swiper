@@ -82,8 +82,6 @@ public class LoginActivity extends AppCompatActivity {
                 intent.putExtra("username",sharedPrefs.getString("accountid", "null"));
                 intent.putExtra("password", sharedPrefs.getString("password", "null"));
                 // TODO: change this to a more secure local session storage alternative
-
-
             }else{
                 // guest account already exists
                 intent.putExtra("type", "guest");
@@ -91,8 +89,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-        // no save exists, create new user / guest by default
-
+        // no save exists, create new user / guest by default / load saved state
         // create references and set starting visibilities
         main = this.findViewById(R.id.main);
         loginButton = this.findViewById(R.id.login);
@@ -120,6 +117,7 @@ public class LoginActivity extends AppCompatActivity {
         registercPassword = this.findViewById(R.id.register_cpassword_input);
         registercPasswordPrompt = this.findViewById(R.id.register_cpassword_prompt);
 
+        // create view sets for login and register
         loginSet = new ConstraintSet();
         loginSet.clone(main);
         registerSet = new ConstraintSet();
@@ -157,12 +155,26 @@ public class LoginActivity extends AppCompatActivity {
                 context.getResources().getDisplayMetrics()
         );
 
+        loginSet.connect(R.id.options, ConstraintSet.TOP, R.id.login_group, ConstraintSet.BOTTOM, marginInPx);
+        registerSet.connect(R.id.options, ConstraintSet.TOP, R.id.register_group, ConstraintSet.BOTTOM, marginInPx);
+
         loginGroup.setVisibility(GONE);
         registerGroup.setVisibility(GONE);
         options.setVisibility(GONE);
 
-        loginSet.connect(R.id.options, ConstraintSet.TOP, R.id.login_group, ConstraintSet.BOTTOM, marginInPx);
-        registerSet.connect(R.id.options, ConstraintSet.TOP, R.id.register_group, ConstraintSet.BOTTOM, marginInPx);
+        if(savedInstanceState.getString("pageOn", "start").equals("login")){
+            loginUserEmail.setText(savedInstanceState.getString("user", ""));
+            loginUserPassword.setText(savedInstanceState.getString("password", ""));
+            loginSet.applyTo(main);
+            pageOn = "login";
+        }else if(savedInstanceState.getString("pageOn", "start").equals("register")){
+            registerUsername.setText(savedInstanceState.getString("user", ""));
+            registerEmail.setText(savedInstanceState.getString("email", ""));
+            registerPassword.setText(savedInstanceState.getString("password", ""));
+            registercPassword.setText(savedInstanceState.getString("cpassword", ""));
+            registerSet.applyTo(main);
+            pageOn = "register";
+        }
 
         // TODO: make animations for this so they don't instantly appear and disappear
         loginButton.setOnClickListener(v -> {
@@ -263,24 +275,21 @@ public class LoginActivity extends AppCompatActivity {
         });
 
     }
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onSaveInstanceState(Bundle outState) {
         if(pageOn.equals("login")){
-
+            outState.putString("pageOn", "login");
+            outState.putString("user", loginUserEmail.getText().toString());
+            outState.putString("password", loginUserPassword.getText().toString());
         }else if(pageOn.equals("register")){
-
+            outState.putString("pageOn", "register");
+            outState.putString("user", registerUsername.getText().toString());
+            outState.putString("email", registerEmail.getText().toString());
+            outState.putString("password", registerPassword.getText().toString());
+            outState.putString("cpassword", registercPassword.getText().toString());
         }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
