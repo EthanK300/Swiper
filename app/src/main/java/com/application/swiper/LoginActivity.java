@@ -78,15 +78,15 @@ public class LoginActivity extends AppCompatActivity {
             userType = sharedPrefs.getString("usertype", "newGuest");
             if(userType.equals("loggedInUser")){
                 // user account already exists
-                intent.putExtra("type", "user");
-                intent.putExtra("username",sharedPrefs.getString("accountid", "null"));
-                intent.putExtra("password", sharedPrefs.getString("password", "null"));
+                String username = sharedPrefs.getString("username", "null");
+                String password = sharedPrefs.getString("password", "null");
+                authLogin(username, password);
                 // TODO: change this to a more secure local session storage alternative
             }else{
                 // guest account already exists
                 intent.putExtra("type", "guest");
+                startActivity(intent);
             }
-            startActivity(intent);
             finish();
         }
         // no save exists, create new user / guest by default / load saved state
@@ -162,18 +162,20 @@ public class LoginActivity extends AppCompatActivity {
         registerGroup.setVisibility(GONE);
         options.setVisibility(GONE);
 
-        if(savedInstanceState.getString("pageOn", "start").equals("login")){
-            loginUserEmail.setText(savedInstanceState.getString("user", ""));
-            loginUserPassword.setText(savedInstanceState.getString("password", ""));
-            loginSet.applyTo(main);
-            pageOn = "login";
-        }else if(savedInstanceState.getString("pageOn", "start").equals("register")){
-            registerUsername.setText(savedInstanceState.getString("user", ""));
-            registerEmail.setText(savedInstanceState.getString("email", ""));
-            registerPassword.setText(savedInstanceState.getString("password", ""));
-            registercPassword.setText(savedInstanceState.getString("cpassword", ""));
-            registerSet.applyTo(main);
-            pageOn = "register";
+        if(savedInstanceState != null){
+            if(savedInstanceState.getString("pageOn", "start").equals("login")){
+                loginUserEmail.setText(savedInstanceState.getString("user", ""));
+                loginUserPassword.setText(savedInstanceState.getString("password", ""));
+                loginSet.applyTo(main);
+                pageOn = "login";
+            }else if(savedInstanceState.getString("pageOn", "start").equals("register")){
+                registerUsername.setText(savedInstanceState.getString("user", ""));
+                registerEmail.setText(savedInstanceState.getString("email", ""));
+                registerPassword.setText(savedInstanceState.getString("password", ""));
+                registercPassword.setText(savedInstanceState.getString("cpassword", ""));
+                registerSet.applyTo(main);
+                pageOn = "register";
+            }
         }
 
         // TODO: make animations for this so they don't instantly appear and disappear
@@ -315,6 +317,7 @@ public class LoginActivity extends AppCompatActivity {
                 System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
                 if(response.isSuccessful()){
                     System.out.println("logged in successfully");
+                    intent.putExtra("type", "user");
                     runOnUiThread(() -> {
                         startActivity(intent);
                     });
@@ -348,6 +351,7 @@ public class LoginActivity extends AppCompatActivity {
                 if(response.isSuccessful()){
                     // good
                     System.out.println("registered successfully");
+                    intent.putExtra("type", "newUser");
                     runOnUiThread(() -> {
                         startActivity(intent);
                     });
