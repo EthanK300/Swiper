@@ -78,9 +78,13 @@ public class LoginActivity extends AppCompatActivity {
             userType = sharedPrefs.getString("usertype", "newGuest");
             if(userType.equals("loggedInUser")){
                 // user account already exists
-                String username = sharedPrefs.getString("username", "null");
-                String password = sharedPrefs.getString("password", "null");
-                authLogin(username, password);
+                String username = sharedPrefs.getString("username", "");
+                String password = sharedPrefs.getString("password", "");
+                if(username.equals("") || password.equals("")){
+                    // TODO: add alert notification or something that password expired / is null
+                }else{
+                    authLogin(username, password);
+                }
                 // TODO: change this to a more secure local session storage alternative
             }else{
                 // guest account already exists
