@@ -12,10 +12,10 @@ public class DraggableTask extends ConstraintLayout {
     private ViewDragHelper dragHelper;
     private View draggableView;
     private float restrict = 0.01f;
-    private float dragCondition = 0.05f;
-    private float velocityCondition = 0.15f;
+    private float velocityCondition = 750f;
     private float density;
     private float originalLeft;
+    private int originalTop;
 
     public DraggableTask(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -24,6 +24,7 @@ public class DraggableTask extends ConstraintLayout {
 
     private void init() {
         originalLeft = (float)this.findViewById(R.id.container).getLeft();
+        originalTop = this.findViewById(R.id.container).getTop();
         System.out.println("original left: " + originalLeft);
         dragHelper = ViewDragHelper.create(this, 1.0f, new ViewDragHelper.Callback() {
             @Override
@@ -32,7 +33,7 @@ public class DraggableTask extends ConstraintLayout {
             }
             @Override
             public int clampViewPositionVertical(View child, int top, int dx) {
-                return child.getTop(); // disallow vertical movement
+                return originalTop; // disallow vertical movement
             }
             @Override
             public int clampViewPositionHorizontal(View child, int left, int dx) {
@@ -47,15 +48,15 @@ public class DraggableTask extends ConstraintLayout {
             @Override
             public void onViewReleased(View child, float xvel, float yvel) {
 //                System.out.println("released on ml: " + child.getLeft() + ", mxl: " + (child.getLeft() + child.getWidth()));
-                float draggedPercent = ((float)child.getLeft() - originalLeft) / (float)getWidth();
-                if (Math.abs(draggedPercent) > dragCondition || Math.abs(xvel / density) > velocityCondition) {
+                if (Math.abs(xvel / density) > velocityCondition) {
                     // see which direction was swiped in
-                    if(((float)child.getLeft() - originalLeft) < 0 || xvel < 0){
-                        // dragged to the left
-                        System.out.println("dragged left");
+                    if(xvel < 0){
+                        // dragged to the left, delay
+                        // TODO: finish this and implement the actions on swipe, add custom recyclerview scroll behavior
+                        System.out.println("dragged left, delaying task");
                     }else{
-                        // dragged to the right
-                        System.out.println("dragged right");
+                        // dragged to the right, complete
+                        System.out.println("dragged right, marking complete");
                     }
                     // reset to middle
                     dragHelper.settleCapturedViewAt((getWidth() / 2) - (child.getWidth() / 2), child.getTop());
@@ -63,8 +64,13 @@ public class DraggableTask extends ConstraintLayout {
                     // snap back
                     dragHelper.settleCapturedViewAt((getWidth() / 2) - (child.getWidth() / 2), child.getTop());
                 }
-                System.out.println("xvel: " + (xvel / density) + ", direction: " + ((float)child.getLeft() - originalLeft) + ", draggedpercent: " + draggedPercent);
+                System.out.println("xvel: " + (xvel / density) + ", direction: " + ((float)child.getLeft() - originalLeft));
                 invalidate();
+            }
+
+            @Override
+            public int getViewHorizontalDragRange(View child) {
+                return 1;
             }
         });
     }
@@ -75,6 +81,7 @@ public class DraggableTask extends ConstraintLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        System.out.println("id: " + this.getId());
         dragHelper.processTouchEvent(event);
         return true;
     }
