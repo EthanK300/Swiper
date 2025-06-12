@@ -170,5 +170,4 @@
             android:contentDescription="Add new note"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

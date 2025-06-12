@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="cerulean">#086788</color>
     <color name="blue">#Add8e6</color>
+    <color name="red">#Ff0000</color>
+    <color name="green">#497d35</color>
 </resources>

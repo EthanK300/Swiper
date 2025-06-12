@@ -11,7 +11,9 @@ import androidx.customview.widget.ViewDragHelper;
 public class DraggableTask extends ConstraintLayout {
     private ViewDragHelper dragHelper;
     private View draggableView;
-    private float restrict = 0.15f;
+    private float restrict = 0.01f;
+    private float dragCondition = 0.05f;
+    private float velocityCondition = 0.15f;
     private float density;
     private float originalLeft;
 
@@ -39,12 +41,14 @@ public class DraggableTask extends ConstraintLayout {
                 int viewWidth = child.getWidth();
                 int minLeft = (int)(restrict * parentWidth);
                 int maxLeft = (int)(((1.0f - restrict) * parentWidth) - viewWidth);
+//                System.out.println("minLeft: " + minLeft + ", maxLeft: " + maxLeft);
                 return Math.max(minLeft, Math.min(left, maxLeft));
             }
             @Override
             public void onViewReleased(View child, float xvel, float yvel) {
+//                System.out.println("released on ml: " + child.getLeft() + ", mxl: " + (child.getLeft() + child.getWidth()));
                 float draggedPercent = ((float)child.getLeft() - originalLeft) / (float)getWidth();
-                if (Math.abs(draggedPercent) > 0.05 || Math.abs(xvel / density) > 0.15) {
+                if (Math.abs(draggedPercent) > dragCondition || Math.abs(xvel / density) > velocityCondition) {
                     // see which direction was swiped in
                     if(((float)child.getLeft() - originalLeft) < 0 || xvel < 0){
                         // dragged to the left
