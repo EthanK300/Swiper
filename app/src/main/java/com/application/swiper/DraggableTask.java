@@ -25,7 +25,6 @@ public class DraggableTask extends ConstraintLayout {
     private void init() {
         originalLeft = (float)this.findViewById(R.id.container).getLeft();
         originalTop = this.findViewById(R.id.container).getTop();
-        System.out.println("original left: " + originalLeft);
         dragHelper = ViewDragHelper.create(this, 1.0f, new ViewDragHelper.Callback() {
             @Override
             public boolean tryCaptureView(View child, int pointerId) {
@@ -81,7 +80,7 @@ public class DraggableTask extends ConstraintLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        System.out.println("id: " + this.getId());
+//        System.out.println("id: " + this.getId());
         dragHelper.processTouchEvent(event);
         return true;
     }

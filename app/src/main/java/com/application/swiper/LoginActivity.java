@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
         sharedPrefs = this.getSharedPreferences("tempData", Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
         intent = new Intent(this, MainActivity.class);
-        client = new OkHttpClient();
+        client = WebHandler.getClient();
 
         // initialize main application activity based on login status
         if(sharedPrefs != null && sharedPrefs.getBoolean("isLoggedIn", false)){
@@ -326,7 +326,7 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(intent);
                     });
                 }else{
-                    System.err.println("server response return error on auth login");
+                    System.err.println("server response returned no login");
                 }
             }
 
