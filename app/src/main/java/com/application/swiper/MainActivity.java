@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,6 +21,7 @@ import androidx.room.Room;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,6 +34,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener{
     Intent intent;
     SharedPreferences sharedPrefs;
@@ -39,10 +49,10 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     ExecutorService executor;
     AppDatabase db;
     DataManager dm;
+    OkHttpClient client;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
-    boolean isGuest;
     int currentTab = -1;
     int prevTab = -1;
     List<Task> tasksList;
@@ -73,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         sharedPrefs = this.getSharedPreferences("tempData", MODE_PRIVATE);
         editor = sharedPrefs.edit();
         executor = Executors.newSingleThreadExecutor();
+        client = WebHandler.init();
         item_container = this.findViewById(R.id.item_container);
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
@@ -93,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         if(intent.getStringExtra("type").equals("guest") || intent.getStringExtra("type").equals("newGuest")){
             editor.putBoolean("isLoggedIn", true);
             editor.commit();
-            isGuest = true;
             // this is a background task thread - for database calls. if need to escape it, use runOnUiThread()
             executor.execute(() -> {
                 db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
@@ -108,9 +118,11 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 }
                 System.out.println("database loaded successfully");
             });
-        }else{
-            isGuest = false;
+        }else if(intent.getStringExtra("type").equals("user")){
             // TODO: create web api connection to grab data from online
+            retrieveList();
+        }else{
+            // should only be type: newUser here
         }
 
         item_container.setLayoutManager(new LinearLayoutManager(this));
@@ -285,6 +297,27 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         Task t = new Task(name, description, dueDate);
         // TODO: make ui show up for task addition
         addTask(t);
+    }
+
+    // TODO: BEFORE IMPLEMENTING THIS FIND A WAY TO STORE SESSIONS OF SOME TYPE OR USER IDS
+    // using cookiejar, backend server will handle via express-session or something similar
+    protected void retrieveList(){
+        Request request = new Request.Builder()
+                .url(WebHandler.urlString + "/retrieve")
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
+                System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                System.out.println("couldn't get response");
+            }
+        });
     }
 
     protected void syncToDatabase(){

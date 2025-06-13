@@ -29,7 +29,6 @@ import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
     String userType = "newGuest";
-    String urlString = "http://localhost:8000";    // TODO: when testing, replace this and the one in network_securityconfig.xml with the right address
     String pageOn = "start"; // start, login, register
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -70,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         sharedPrefs = this.getSharedPreferences("tempData", Context.MODE_PRIVATE);
         editor = sharedPrefs.edit();
         intent = new Intent(this, MainActivity.class);
-        client = WebHandler.getClient();
+        client = WebHandler.init();
 
         // initialize main application activity based on login status
         if(sharedPrefs != null && sharedPrefs.getBoolean("isLoggedIn", false)){
@@ -311,7 +310,7 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
 
         Request request = new Request.Builder()
-                .url(urlString + "/login")
+                .url(WebHandler.urlString + "/login")
                 .post(requestBody)
                 .build();
 
@@ -345,7 +344,7 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
 
         Request request = new Request.Builder()
-                .url(urlString + "/register")
+                .url(WebHandler.urlString + "/register")
                 .post(requestBody)
                 .build();
         client.newCall(request).enqueue(new Callback() {
