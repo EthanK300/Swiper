@@ -321,6 +321,8 @@ public class LoginActivity extends AppCompatActivity {
                 if(response.isSuccessful()){
                     System.out.println("logged in successfully");
                     intent.putExtra("type", "user");
+                    intent.putExtra("username",user);
+                    intent.putExtra("password", password);
                     runOnUiThread(() -> {
                         startActivity(intent);
                     });

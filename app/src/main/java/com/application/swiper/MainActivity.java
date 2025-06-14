@@ -20,8 +20,13 @@ import androidx.room.Room;
 
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.tabs.TabLayout;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,6 +42,7 @@ import java.util.concurrent.Executors;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     AppDatabase db;
     DataManager dm;
     OkHttpClient client;
+    Gson gson;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
@@ -67,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     TextView noContentMessage;
     RecyclerView item_container;
     TaskAdapter adapter;
+    String userType; // user, newUser, guest, newGuest
+    String username;
+    String password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -81,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         title = this.findViewById(R.id.pageTitle);
         noContentMessage = this.findViewById(R.id.noContentMessage);
         sharedPrefs = this.getSharedPreferences("tempData", MODE_PRIVATE);
+        gson = new Gson();
         editor = sharedPrefs.edit();
         executor = Executors.newSingleThreadExecutor();
         client = WebHandler.init();
@@ -98,13 +109,12 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 tab.select();
             }
         }
-
-        System.out.println("session type: " + intent.getStringExtra("type"));
+        userType = intent.getStringExtra("type");
+        System.out.println("session type: " + userType);
         // open and create database connection if the user is a guest
-        if(intent.getStringExtra("type").equals("guest") || intent.getStringExtra("type").equals("newGuest")){
+        if(userType.equals("guest") || userType.equals("newGuest")){
             editor.putBoolean("isLoggedIn", true);
             editor.commit();
-            // this is a background task thread - for database calls. if need to escape it, use runOnUiThread()
             executor.execute(() -> {
                 db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "swiper-data").build();
                 dm = db.dataManager();
@@ -118,9 +128,16 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 }
                 System.out.println("database loaded successfully");
             });
-        }else if(intent.getStringExtra("type").equals("user")){
+        }else if(userType.equals("user")){
+            username = intent.getStringExtra("username");
+            password = intent.getStringExtra("password");
             // TODO: create web api connection to grab data from online
-            retrieveList();
+            String jsonString = retrieveList();
+            if(jsonString.equals("")){
+                System.out.println("error retrieving json string");
+            }
+            Type listType = new TypeToken<List<Task>>(){}.getType();
+            tasksList = gson.fromJson(jsonString, listType);
         }else{
             // should only be type: newUser here
         }
@@ -218,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     protected void onPause(){
-        syncToDatabase();
+        updateDatabase();
         super.onPause();
     }
 
@@ -301,7 +318,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     // TODO: BEFORE IMPLEMENTING THIS FIND A WAY TO STORE SESSIONS OF SOME TYPE OR USER IDS
     // using cookiejar, backend server will handle via express-session or something similar
-    protected void retrieveList(){
+    protected String retrieveList(){
+        String res = "";
         Request request = new Request.Builder()
                 .url(WebHandler.urlString + "/retrieve")
                 .get()
@@ -318,10 +336,46 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 System.out.println("couldn't get response");
             }
         });
+        return res;
     }
 
-    protected void syncToDatabase(){
-        // sync current task list to database
+    protected void updateDatabase(){
+        if(userType.equals("user") || userType.equals("newUser")){
+            JsonObject root = new JsonObject();
+            JsonElement taskListJSON = gson.toJsonTree(tasksList);
+            root.addProperty("username" , username);
+            root.addProperty("password", password);
+            root.add("tasks", taskListJSON);
+
+            String json = root.toString();
+            RequestBody requestBody = RequestBody.create(json, MediaType.get("application/json"));
+
+            Request request = new Request.Builder()
+                    .url(WebHandler.urlString + "/update")
+                    .post(requestBody)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) {
+                    System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
+                    if(response.isSuccessful()){
+                        System.out.println("server response returned successful");
+                    }else{
+                        System.err.println("server response returned unsuccessful");
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    System.out.println("couldn't get response");
+                }
+            });
+        }else{
+            // usertype is guest or newGuest
+            // TODO: sync current task list to local ROOM database
+
+        }
     }
 
 
