@@ -99,14 +99,11 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
+        // select starting tab
         for(int i = 0; i < labels.length; i++){
             String s = labels[i];
             if(!s.equals("Calendar")){
                 tabLayout.addTab(tabLayout.newTab().setText(s));
-            }
-            if(i == currentTab){
-                TabLayout.Tab tab = tabLayout.getTabAt(i);
-                tab.select();
             }
         }
         userType = intent.getStringExtra("type");
@@ -124,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 }else{
                     hasItems = true;
                     tasksList = dm.getAll();
+                    updateContentView();
                     System.out.println("items loaded");
                 }
                 System.out.println("database loaded successfully");
@@ -148,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
         settings.setOnClickListener(v -> {
             System.out.println("settings clicked");
+            System.out.println("ctab: " + currentTab);
+            System.out.println("tasklist size: " + tasksList.size() + ", shownlist size: " + shownTasks.size());
         });
 
         add.setOnClickListener(v -> {
@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             System.out.println("no current tab exists via shared");
             currentTab = 0;
         }
-        //TODO: put here the code that updates which set of tasks is shown based on the tablayout
 
         // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
@@ -222,7 +221,10 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
             }
         });
-        tabLayout.selectTab(tabLayout.getTabAt(0));
+        System.out.println("selected default tab 0");
+        // select previous tab if there is one
+        tabLayout.selectTab(null);
+        tabLayout.selectTab(tabLayout.getTabAt(currentTab));
         updateContentView();
     }
 
@@ -247,12 +249,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             dm.addTask(t);
         });
         updateContentView();
-        // TODO: use this to bind to the recyclerview so that showntasks is used as the thing to show
-        // and so that updateContentView is able to handle it
     }
 
     protected void updateContentView(){
-        // TODO: need to dynamically add textviews
         if(prevTab == currentTab){
             return;
         }
@@ -280,7 +279,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             noContentMessage.setVisibility(GONE);
         }
         adapter.notifyDataSetChanged();     // TODO: make this better / more efficient
-        System.out.println("showing: " + shownTasks.size() + ", all task list size: " + tasksList.size());
     }
 
     protected void getTasksBetweenTimes(String query){
@@ -314,7 +312,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     public void onFormSubmitted(String name, String description, long dueDate) {
         System.out.println("received data from form in mainactivity");
         Task t = new Task(name, description, dueDate);
-        // TODO: make ui show up for task addition
         addTask(t);
     }
 

@@ -1,10 +1,11 @@
 package com.application.swiper;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(primaryKeys = {"title", "description", "dueDate"})
 public class Task {
     public Task(String name, String description, long dueDate){
         this.title = name;
@@ -16,15 +17,15 @@ public class Task {
 
     }
 
-    @PrimaryKey(autoGenerate = true)
-    public int uid;
-
+    @NonNull
     @ColumnInfo(name = "title")
     public String title;
 
+    @NonNull
     @ColumnInfo(name = "description")
     public String description;
 
+    @NonNull
     @ColumnInfo(name = "dueDate")
     public long dueDate;
 }
