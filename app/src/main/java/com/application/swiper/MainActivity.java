@@ -222,6 +222,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
             }
         });
+        tabLayout.selectTab(tabLayout.getTabAt(0));
         updateContentView();
     }
 
@@ -235,6 +236,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     protected void onPause(){
+        System.out.println("onpause called");
         updateDatabase();
         super.onPause();
     }
@@ -358,12 +360,12 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response) {
-                    System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
                     if(response.isSuccessful()){
                         System.out.println("server response returned successful");
                     }else{
                         System.err.println("server response returned unsuccessful");
                     }
+                    System.out.println("received response: " + response.code() + ", body: " + response.message().toString());
                 }
 
                 @Override
@@ -374,7 +376,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         }else{
             // usertype is guest or newGuest
             // TODO: sync current task list to local ROOM database
-
+            executor.execute(() -> {
+                dm.updateAll(tasksList);
+            });
         }
     }
 
