@@ -129,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         }else if(userType.equals("user")){
             username = intent.getStringExtra("username");
             password = intent.getStringExtra("password");
-            // TODO: create web api connection to grab data from online
             String jsonString = retrieveList();
             if(jsonString.equals("")){
                 System.out.println("error retrieving json string");
@@ -176,7 +175,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             currentTab = 0;
         }
 
-        // TODO: fix this so that the page that the user was on last is saved and re-used when they reopen the app
         ViewGroup tabStrip = (ViewGroup) tabLayout.getChildAt(0);
 
         for (int i = 0; i < tabStrip.getChildCount(); i++) {
@@ -315,7 +313,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         addTask(t);
     }
 
-    // TODO: BEFORE IMPLEMENTING THIS FIND A WAY TO STORE SESSIONS OF SOME TYPE OR USER IDS
     // using cookiejar, backend server will handle via express-session or something similar
     protected String retrieveList(){
         String res = "";
@@ -372,7 +369,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             });
         }else{
             // usertype is guest or newGuest
-            // TODO: sync current task list to local ROOM database
             executor.execute(() -> {
                 dm.updateAll(tasksList);
             });
