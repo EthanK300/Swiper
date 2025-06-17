@@ -282,14 +282,21 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     public void delayTask(int pos) {
-        View task = item_container.getChildAt(pos);
-        System.out.println("delayed task: " + ((TextView)task.findViewById(R.id.card_text)).getText().toString());
+        View showing = item_container.getChildAt(pos); // pos should reflect the shownTasks list position as well
+        Task t = shownTasks.get(pos);
+        System.out.println("DD: " + t.dueDate + ", new DD: " + (t.dueDate + 86400000));
+        t.dueDate += 86400000;
+        System.out.println("delayed task: " + ((TextView)showing.findViewById(R.id.card_text)).getText().toString());
+        updateContentView();
     }
 
     @Override
     public void completeTask(int pos) {
-        View task = item_container.getChildAt(pos);
-        System.out.println("completed task: " + ((TextView)task.findViewById(R.id.card_text)).getText().toString());
+        View showing = item_container.getChildAt(pos); // pos should reflect the shownTasks list position as well
+        Task t = shownTasks.get(pos);
+        System.out.println("completed task: " + ((TextView)showing.findViewById(R.id.card_text)).getText().toString());
+        t.done = true;
+        updateContentView();
     }
 
     protected void getTasksBetweenTimes(String query){
@@ -311,6 +318,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         shownTasks.clear();
         System.out.println("cleaning shownTasks list");
         for(int i = 0; i < tasksList.size(); i++){
+            if(tasksList.get(i).done){
+                continue;
+            }
             long time = tasksList.get(i).dueDate;
             if(time > start && time < end){
                 shownTasks.add(tasksList.get(i));
