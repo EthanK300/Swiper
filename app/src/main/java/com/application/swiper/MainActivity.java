@@ -282,12 +282,14 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     public void delayTask(int pos) {
-        System.out.println("delayed task: " + pos);
+        View task = item_container.getChildAt(pos);
+        System.out.println("delayed task: " + ((TextView)task.findViewById(R.id.card_text)).getText().toString());
     }
 
     @Override
     public void completeTask(int pos) {
-        System.out.println("completed task: " + pos);
+        View task = item_container.getChildAt(pos);
+        System.out.println("completed task: " + ((TextView)task.findViewById(R.id.card_text)).getText().toString());
     }
 
     protected void getTasksBetweenTimes(String query){

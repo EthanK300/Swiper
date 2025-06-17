@@ -62,13 +62,10 @@ public class DraggableTask extends ConstraintLayout {
                     int pos = getRecyclerPos();
                     if(xvel < 0){
                         // dragged to the left, delay
-                        // TODO: finish this and implement the actions on swipe, add custom recyclerview scroll behavior
                         listener.delayTask(pos);
-                        System.out.println("dragged left, delaying task");
                     }else{
                         // dragged to the right, complete
                         listener.completeTask(pos);
-                        System.out.println("dragged right, marking complete");
                     }
                     // reset to middle
                     dragHelper.settleCapturedViewAt((getWidth() / 2) - (child.getWidth() / 2), child.getTop());
