@@ -2,11 +2,14 @@ package com.application.swiper;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.customview.widget.ViewDragHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class DraggableTask extends ConstraintLayout {
     private ViewDragHelper dragHelper;
@@ -16,6 +19,8 @@ public class DraggableTask extends ConstraintLayout {
     private float density;
     private float originalLeft;
     private int originalTop;
+    private int recyclerPos;
+    private TaskAction listener;
 
     public DraggableTask(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -49,12 +54,20 @@ public class DraggableTask extends ConstraintLayout {
 //                System.out.println("released on ml: " + child.getLeft() + ", mxl: " + (child.getLeft() + child.getWidth()));
                 if (Math.abs(xvel / density) > velocityCondition) {
                     // see which direction was swiped in
+                    View v = (View) getParent();
+                    if(v != null){
+                        System.out.println("id of draggable: " + v.getId());
+                        v.getId();
+                    }
+                    int pos = getRecyclerPos();
                     if(xvel < 0){
                         // dragged to the left, delay
                         // TODO: finish this and implement the actions on swipe, add custom recyclerview scroll behavior
+                        listener.delayTask(pos);
                         System.out.println("dragged left, delaying task");
                     }else{
                         // dragged to the right, complete
+                        listener.completeTask(pos);
                         System.out.println("dragged right, marking complete");
                     }
                     // reset to middle
@@ -102,5 +115,21 @@ public class DraggableTask extends ConstraintLayout {
     protected void onFinishInflate() {
         super.onFinishInflate();
         draggableView = findViewById(R.id.container); // draggable child view to drag
+    }
+
+    public void setTaskActionListener(TaskAction listener){
+        this.listener = listener;
+    }
+
+    protected int getRecyclerPos(){
+        ViewParent parent = getParent();
+        while(parent != null && !(parent instanceof RecyclerView)){
+            parent = parent.getParent();
+        }
+        if(parent instanceof RecyclerView){
+            RecyclerView recyclerView = (RecyclerView)parent;
+            return recyclerView.getChildAdapterPosition(this);
+        }
+        return -1;
     }
 }

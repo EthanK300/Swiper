@@ -48,7 +48,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener{
+public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction{
     Intent intent;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
+
         // select starting tab
         for(int i = 0; i < labels.length; i++){
             String s = labels[i];
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         }
 
         item_container.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new TaskAdapter(shownTasks);
+        adapter = new TaskAdapter(this, shownTasks);
         item_container.setAdapter(adapter);
 
         settings.setOnClickListener(v -> {
@@ -276,7 +277,17 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             hasItems = true;
             noContentMessage.setVisibility(GONE);
         }
-        adapter.notifyDataSetChanged();     // TODO: make this better / more efficient
+        adapter.notifyDataSetChanged();     // TODO: make this better / more efficient to not use notifyDataSetChanged()
+    }
+
+    @Override
+    public void delayTask(int pos) {
+        System.out.println("delayed task: " + pos);
+    }
+
+    @Override
+    public void completeTask(int pos) {
+        System.out.println("completed task: " + pos);
     }
 
     protected void getTasksBetweenTimes(String query){
@@ -374,6 +385,4 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             });
         }
     }
-
-
 }
