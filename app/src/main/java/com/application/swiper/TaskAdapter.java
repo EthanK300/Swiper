@@ -38,6 +38,15 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskView>{
                 mainActivityReference.completeTask(pos);
             }
         });
+
+        holder.edit.setOnClickListener(v -> {
+            mainActivityReference.editTask(pos);
+        });
+
+        holder.delete.setOnClickListener(v -> {
+            mainActivityReference.deleteTask(pos);
+        });
+
         holder.data = taskList.get(pos);
         holder.bindData();
 

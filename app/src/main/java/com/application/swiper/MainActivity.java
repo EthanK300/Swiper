@@ -257,11 +257,14 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         switch(currentTab){
             case 0:     // today
                 getTasksBetweenTimes("today");
+                title.setText("Today");
                 break;
             case 1:     // this week
                 getTasksBetweenTimes("week");
+                title.setText("This Week");
                 break;
             case 2:     //all
+                title.setText("All Tasks");
                 shownTasks.clear();
                 shownTasks.addAll(tasksList);
                 break;
@@ -280,7 +283,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         adapter.notifyDataSetChanged();     // TODO: make this better / more efficient to not use notifyDataSetChanged()
     }
 
-    @Override
     public void delayTask(int pos) {
         View showing = item_container.getChildAt(pos); // pos should reflect the shownTasks list position as well
         Task t = shownTasks.get(pos);
@@ -290,13 +292,20 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         updateContentView();
     }
 
-    @Override
     public void completeTask(int pos) {
         View showing = item_container.getChildAt(pos); // pos should reflect the shownTasks list position as well
         Task t = shownTasks.get(pos);
         System.out.println("completed task: " + ((TextView)showing.findViewById(R.id.card_text)).getText().toString());
         t.done = true;
         updateContentView();
+    }
+
+    public void editTask(int pos){
+        System.out.println("editing task: " + pos);
+    }
+
+    public void deleteTask(int pos){
+        System.out.println("deleting task: " + pos);
     }
 
     protected void getTasksBetweenTimes(String query){

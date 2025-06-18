@@ -66,6 +66,28 @@
             app:layout_constraintEnd_toEndOf="parent"
             />
 
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/edit"
+            android:src="@drawable/editpencil"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/delete"
+            android:scaleType="fitXY"
+            app:layout_constraintDimensionRatio="1:1"
+            />
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:id="@+id/delete"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:scaleType="fitXY"
+            app:layout_constraintDimensionRatio="1:1"
+            />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.application.swiper.DraggableTask>
