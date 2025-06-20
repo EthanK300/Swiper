@@ -39,6 +39,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.room:room-runtime:2.7.1")
     implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.alphacephei:vosk-android:0.3.45")
     implementation(libs.room.common.jvm)
     annotationProcessor("androidx.room:room-compiler:2.7.1")
     testImplementation(libs.junit)

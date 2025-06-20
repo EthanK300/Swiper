@@ -25,6 +25,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import org.vosk.Model;
+import org.vosk.Recognizer;
+import org.vosk.android.RecognitionListener;
+import org.vosk.android.SpeechService;
+import org.vosk.android.SpeechStreamService;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.time.DayOfWeek;
@@ -48,7 +54,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction{
+public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction, RecognitionListener {
     Intent intent;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -57,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     DataManager dm;
     OkHttpClient client;
     Gson gson;
+    private Model model;
+    private SpeechService speechService;
+    private SpeechStreamService speechStreamService;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
@@ -99,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
+
+        System.out.println("path: " + getApplicationContext().getFilesDir().getAbsolutePath());
 
         // select starting tab
         for(int i = 0; i < labels.length; i++){
@@ -233,6 +244,15 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         System.out.println("saving tab: " + currentTab);
         System.out.println("save success? : " + editor.commit());
         super.onDestroy();
+
+        if (speechService != null) {
+            speechService.stop();
+            speechService.shutdown();
+        }
+
+        if (speechStreamService != null) {
+            speechStreamService.stop();
+        }
     }
 
     @Override
@@ -405,5 +425,30 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 dm.updateAll(tasksList);
             });
         }
+    }
+
+    @Override
+    public void onPartialResult(String hypothesis) {
+
+    }
+
+    @Override
+    public void onResult(String hypothesis) {
+
+    }
+
+    @Override
+    public void onFinalResult(String hypothesis) {
+
+    }
+
+    @Override
+    public void onError(Exception exception) {
+
+    }
+
+    @Override
+    public void onTimeout() {
+
     }
 }
