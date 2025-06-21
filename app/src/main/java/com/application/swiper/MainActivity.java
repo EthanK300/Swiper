@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -54,7 +55,6 @@ import java.util.zip.ZipInputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -70,9 +70,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     DataManager dm;
     OkHttpClient client;
     Gson gson;
-    private Model model;
     private SpeechService speechService;
-    private SpeechStreamService speechStreamService;
+    private Model model;
+    private Recognizer rec;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
@@ -115,9 +115,14 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
+        // attempt to load voice recognition model
+
         try {
-            File model = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
-            Model m = new Model(model.getAbsolutePath());
+            File m = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
+            System.out.println("trying model path: " + m.getAbsolutePath());
+            model = new Model(m.getAbsolutePath() + "/vosk-model-small-en-us-0.15");
+
+            System.out.println("loaded");
         } catch (IOException e) {
             System.out.println("voice recognition loading error");
         }
@@ -180,10 +185,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         });
 
         aiAssist.setOnClickListener(v -> {
-            System.out.println("aiAssist clicked");
-            // temporary testing for times
-            tasksList.get(0).dueDate = 0;
-            updateContentView();
+            // attempt to recognize audio
+            attemptRecognition();
         });
         profile.setOnClickListener(v -> {
             System.out.println("profile clicked");
@@ -259,10 +262,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         if (speechService != null) {
             speechService.stop();
             speechService.shutdown();
-        }
-
-        if (speechStreamService != null) {
-            speechStreamService.stop();
         }
     }
 
@@ -477,26 +476,43 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     public void onPartialResult(String hypothesis) {
-
+        System.out.println("hyp: " + hypothesis);
     }
 
     @Override
     public void onResult(String hypothesis) {
-
+        System.out.println("res: " + hypothesis);
     }
 
     @Override
     public void onFinalResult(String hypothesis) {
-
+        System.out.println("final res: " + hypothesis);
     }
 
     @Override
     public void onError(Exception exception) {
-
+        exception.printStackTrace();
     }
 
     @Override
     public void onTimeout() {
 
+    }
+
+    private void attemptRecognition(){
+        System.out.println("attempting recognition");
+        if(rec == null){
+            rec = new Recognizer(model, 16000.0f);
+        }
+        if(speechService == null){
+            try {
+                speechService = new SpeechService(rec, 16000.0f);
+            }catch(IOException e){
+                System.out.println("failed to start voice recognition");
+            }
+        }
+        executor.execute(() -> {
+            speechService.startListening(this);
+        });
     }
 }
