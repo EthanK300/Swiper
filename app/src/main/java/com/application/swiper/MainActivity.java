@@ -3,6 +3,7 @@ package com.application.swiper;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -31,7 +32,11 @@ import org.vosk.android.RecognitionListener;
 import org.vosk.android.SpeechService;
 import org.vosk.android.SpeechStreamService;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -44,6 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -108,8 +115,12 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
-
-        System.out.println("path: " + getApplicationContext().getFilesDir().getAbsolutePath());
+        try {
+            File model = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
+            Model m = new Model(model.getAbsolutePath());
+        } catch (IOException e) {
+            System.out.println("voice recognition loading error");
+        }
 
         // select starting tab
         for(int i = 0; i < labels.length; i++){
@@ -425,6 +436,43 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                 dm.updateAll(tasksList);
             });
         }
+    }
+
+    public static File unzip(Context context, String zipAssetName, String targetDirName) throws IOException {
+        File targetDir = new File(context.getFilesDir(), targetDirName);
+        // return if file already exists
+        if (targetDir.exists()) {
+            return targetDir;
+        }
+        // create unzipped file
+        targetDir.mkdirs();
+        InputStream assetZip = context.getAssets().open(zipAssetName);
+        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(assetZip));
+        ZipEntry entry;
+        byte[] buffer = new byte[8192];
+
+        while ((entry = zis.getNextEntry()) != null) {
+            File outFile = new File(targetDir, entry.getName());
+
+            if (entry.isDirectory()) {
+                outFile.mkdirs();
+            } else {
+                File parent = outFile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+                FileOutputStream fos = new FileOutputStream(outFile);
+                int count;
+                while ((count = zis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, count);
+                }
+                fos.close();
+            }
+            zis.closeEntry();
+        }
+
+        zis.close();
+        return targetDir;
     }
 
     @Override
