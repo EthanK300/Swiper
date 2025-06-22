@@ -3,9 +3,11 @@ package com.application.swiper;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Pair;
@@ -16,6 +18,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -73,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     private SpeechService speechService;
     private Model model;
     private Recognizer rec;
+    long voiceCaptureDelay;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
@@ -186,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
         aiAssist.setOnClickListener(v -> {
             // attempt to recognize audio
-            attemptRecognition();
+            checkPermissions();
         });
         profile.setOnClickListener(v -> {
             System.out.println("profile clicked");
@@ -499,6 +504,14 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     }
 
+    private void checkPermissions(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }
+        attemptRecognition();
+    }
+
     private void attemptRecognition(){
         System.out.println("attempting recognition");
         if(rec == null){
@@ -513,6 +526,24 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         }
         executor.execute(() -> {
             speechService.startListening(this);
+            // listen until person stops speaking
+            while((System.currentTimeMillis() - voiceCaptureDelay) <= 1000);
+            speechService.stop();
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                attemptRecognition();
+            } else {
+                System.out.println("unable to get permissions");
+                // unable to acquire permissions to record audio for the ai assist-er
+            }
+        }
     }
 }
