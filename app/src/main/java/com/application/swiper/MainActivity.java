@@ -31,6 +31,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONObject;
 import org.vosk.Model;
 import org.vosk.Recognizer;
 import org.vosk.android.RecognitionListener;
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     private Model model;
     private Recognizer rec;
     long voiceCaptureDelay;
+    String capturedText;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
@@ -180,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             System.out.println("settings clicked");
             System.out.println("ctab: " + currentTab);
             System.out.println("tasklist size: " + tasksList.size() + ", shownlist size: " + shownTasks.size());
+            if(speechService != null) speechService.stop();
         });
 
         add.setOnClickListener(v -> {
@@ -274,6 +277,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     protected void onPause(){
         System.out.println("onpause called");
         updateDatabase();
+        if(speechService != null){
+            speechService.stop();
+        }
         super.onPause();
     }
 
@@ -481,17 +487,23 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     public void onPartialResult(String hypothesis) {
-        System.out.println("hyp: " + hypothesis);
+        // do nothing with partials, only want the full request
     }
 
     @Override
     public void onResult(String hypothesis) {
-        System.out.println("res: " + hypothesis);
+        try{
+            JSONObject j = new JSONObject(hypothesis);
+            capturedText = j.getString("text");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("attempting to execute: " + capturedText);
     }
 
     @Override
     public void onFinalResult(String hypothesis) {
-        System.out.println("final res: " + hypothesis);
+        // also do nothing with final result, only want the full request
     }
 
     @Override
@@ -508,8 +520,10 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }else{
+            attemptRecognition();
         }
-        attemptRecognition();
+
     }
 
     private void attemptRecognition(){
@@ -527,8 +541,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         executor.execute(() -> {
             speechService.startListening(this);
             // listen until person stops speaking
-            while((System.currentTimeMillis() - voiceCaptureDelay) <= 1000);
-            speechService.stop();
+//            while((System.currentTimeMillis() - voiceCaptureDelay) <= 1000);
+//            speechService.stop();
         });
     }
 
@@ -539,6 +553,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                System.out.println("granted permissions");
                 attemptRecognition();
             } else {
                 System.out.println("unable to get permissions");
