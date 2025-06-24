@@ -179,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         item_container.setAdapter(adapter);
 
         settings.setOnClickListener(v -> {
+            // using this as a temporary test button
             System.out.println("settings clicked");
             System.out.println("ctab: " + currentTab);
             System.out.println("tasklist size: " + tasksList.size() + ", shownlist size: " + shownTasks.size());
@@ -194,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
         aiAssist.setOnClickListener(v -> {
             // attempt to recognize audio
+            // TODO: add a layout for overlay that appears when detecting microphone input
             checkPermissions();
         });
         profile.setOnClickListener(v -> {
@@ -499,6 +501,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             e.printStackTrace();
         }
         System.out.println("attempting to execute: " + capturedText);
+        speechService.stop();
     }
 
     @Override
