@@ -85,8 +85,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     boolean hasItems = false;
     int currentTab = -1;
     int prevTab = -1;
-    List<Task> tasksList;
-    List<Task> shownTasks;
+    ArrayList<Task> tasksList;
+    ArrayList<Task> shownTasks;
 
     ImageButton settings;
     ImageButton add;
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                     System.out.println("no items loaded");
                 }else{
                     hasItems = true;
-                    tasksList = dm.getAll();
+                    tasksList = (ArrayList) dm.getAll(); // TODO: watch make sure this doesn't cause problems with List<T>
                     updateContentView();
                     System.out.println("items loaded");
                 }
@@ -516,7 +516,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     @Override
     public void onTimeout() {
-
+        // didn't hear anything, maybe microphone is muted?
+        speechService.stop();
     }
 
     private void checkPermissions(){

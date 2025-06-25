@@ -8,12 +8,13 @@ import android.view.ViewParent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskView>{
-    private List<Task> taskList;
+    private ArrayList<Task> taskList;
     private MainActivity mainActivityReference;
-    public TaskAdapter(MainActivity ma, List<Task> list){
+    public TaskAdapter(MainActivity ma, ArrayList<Task> list){
         this.mainActivityReference = ma;
         this.taskList = list;
     }
