@@ -3,10 +3,14 @@ package com.application.swiper;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -14,6 +18,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -25,7 +31,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONObject;
+import org.vosk.Model;
+import org.vosk.Recognizer;
+import org.vosk.android.RecognitionListener;
+import org.vosk.android.SpeechService;
+import org.vosk.android.SpeechStreamService;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.time.DayOfWeek;
 import java.time.Instant;
@@ -38,17 +55,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction{
+public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction, RecognitionListener {
     Intent intent;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -57,13 +75,18 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     DataManager dm;
     OkHttpClient client;
     Gson gson;
+    private SpeechService speechService;
+    private Model model;
+    private Recognizer rec;
+    long voiceCaptureDelay;
+    String capturedText;
 
     String[] labels = {"Today","This Week", "All", "Calendar"};
     boolean hasItems = false;
     int currentTab = -1;
     int prevTab = -1;
-    List<Task> tasksList;
-    List<Task> shownTasks;
+    ArrayList<Task> tasksList;
+    ArrayList<Task> shownTasks;
 
     ImageButton settings;
     ImageButton add;
@@ -99,6 +122,17 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
+        // attempt to load voice recognition model
+
+        try {
+            File m = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
+            System.out.println("trying model path: " + m.getAbsolutePath());
+            model = new Model(m.getAbsolutePath() + "/vosk-model-small-en-us-0.15");
+
+            System.out.println("loaded");
+        } catch (IOException e) {
+            System.out.println("voice recognition loading error");
+        }
 
         // select starting tab
         for(int i = 0; i < labels.length; i++){
@@ -121,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                     System.out.println("no items loaded");
                 }else{
                     hasItems = true;
-                    tasksList = dm.getAll();
+                    tasksList = (ArrayList) dm.getAll(); // TODO: watch make sure this doesn't cause problems with List<T>
                     updateContentView();
                     System.out.println("items loaded");
                 }
@@ -145,9 +179,11 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         item_container.setAdapter(adapter);
 
         settings.setOnClickListener(v -> {
+            // using this as a temporary test button
             System.out.println("settings clicked");
             System.out.println("ctab: " + currentTab);
             System.out.println("tasklist size: " + tasksList.size() + ", shownlist size: " + shownTasks.size());
+            if(speechService != null) speechService.stop();
         });
 
         add.setOnClickListener(v -> {
@@ -158,10 +194,9 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         });
 
         aiAssist.setOnClickListener(v -> {
-            System.out.println("aiAssist clicked");
-            // temporary testing for times
-            tasksList.get(0).dueDate = 0;
-            updateContentView();
+            // attempt to recognize audio
+            // TODO: add a layout for overlay that appears when detecting microphone input
+            checkPermissions();
         });
         profile.setOnClickListener(v -> {
             System.out.println("profile clicked");
@@ -233,12 +268,20 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         System.out.println("saving tab: " + currentTab);
         System.out.println("save success? : " + editor.commit());
         super.onDestroy();
+
+        if (speechService != null) {
+            speechService.stop();
+            speechService.shutdown();
+        }
     }
 
     @Override
     protected void onPause(){
         System.out.println("onpause called");
         updateDatabase();
+        if(speechService != null){
+            speechService.stop();
+        }
         super.onPause();
     }
 
@@ -404,6 +447,122 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
             executor.execute(() -> {
                 dm.updateAll(tasksList);
             });
+        }
+    }
+
+    public static File unzip(Context context, String zipAssetName, String targetDirName) throws IOException {
+        File targetDir = new File(context.getFilesDir(), targetDirName);
+        // return if file already exists
+        if (targetDir.exists()) {
+            return targetDir;
+        }
+        // create unzipped file
+        targetDir.mkdirs();
+        InputStream assetZip = context.getAssets().open(zipAssetName);
+        ZipInputStream zis = new ZipInputStream(new BufferedInputStream(assetZip));
+        ZipEntry entry;
+        byte[] buffer = new byte[8192];
+
+        while ((entry = zis.getNextEntry()) != null) {
+            File outFile = new File(targetDir, entry.getName());
+
+            if (entry.isDirectory()) {
+                outFile.mkdirs();
+            } else {
+                File parent = outFile.getParentFile();
+                if (!parent.exists()) {
+                    parent.mkdirs();
+                }
+                FileOutputStream fos = new FileOutputStream(outFile);
+                int count;
+                while ((count = zis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, count);
+                }
+                fos.close();
+            }
+            zis.closeEntry();
+        }
+
+        zis.close();
+        return targetDir;
+    }
+
+    @Override
+    public void onPartialResult(String hypothesis) {
+        // do nothing with partials, only want the full request
+    }
+
+    @Override
+    public void onResult(String hypothesis) {
+        try{
+            JSONObject j = new JSONObject(hypothesis);
+            capturedText = j.getString("text");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("attempting to execute: " + capturedText);
+        speechService.stop();
+    }
+
+    @Override
+    public void onFinalResult(String hypothesis) {
+        // also do nothing with final result, only want the full request
+    }
+
+    @Override
+    public void onError(Exception exception) {
+        exception.printStackTrace();
+    }
+
+    @Override
+    public void onTimeout() {
+        // didn't hear anything, maybe microphone is muted?
+        speechService.stop();
+    }
+
+    private void checkPermissions(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }else{
+            attemptRecognition();
+        }
+
+    }
+
+    private void attemptRecognition(){
+        System.out.println("attempting recognition");
+        if(rec == null){
+            rec = new Recognizer(model, 16000.0f);
+        }
+        if(speechService == null){
+            try {
+                speechService = new SpeechService(rec, 16000.0f);
+            }catch(IOException e){
+                System.out.println("failed to start voice recognition");
+            }
+        }
+        executor.execute(() -> {
+            speechService.startListening(this);
+            // listen until person stops speaking
+//            while((System.currentTimeMillis() - voiceCaptureDelay) <= 1000);
+//            speechService.stop();
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                System.out.println("granted permissions");
+                attemptRecognition();
+            } else {
+                System.out.println("unable to get permissions");
+                // unable to acquire permissions to record audio for the ai assist-er
+            }
         }
     }
 }
