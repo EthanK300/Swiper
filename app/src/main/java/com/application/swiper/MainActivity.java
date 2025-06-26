@@ -349,6 +349,8 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     public void deleteTask(int pos){
         System.out.println("deleting task: " + pos);
+        tasksList.remove(pos);
+        updateContentView();
     }
 
     protected void getTasksBetweenTimes(String query){

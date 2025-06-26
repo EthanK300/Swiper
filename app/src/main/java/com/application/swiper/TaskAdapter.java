@@ -7,6 +7,7 @@ import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Delete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskView>{
         });
 
         holder.delete.setOnClickListener(v -> {
-            mainActivityReference.deleteTask(pos);
+            DeleteDialog d = new DeleteDialog(mainActivityReference, pos);
+            d.show(mainActivityReference.getSupportFragmentManager(), "deleteDialog");
         });
 
         holder.data = taskList.get(pos);
