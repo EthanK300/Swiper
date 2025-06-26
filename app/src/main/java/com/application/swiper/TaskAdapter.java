@@ -1,16 +1,12 @@
 package com.application.swiper;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Delete;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskView>{
     private ArrayList<Task> taskList;
@@ -42,7 +38,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskView>{
         });
 
         holder.edit.setOnClickListener(v -> {
-            mainActivityReference.editTask(pos);
+            Task t = mainActivityReference.tasksList.get(pos);
+            TaskFormSheet editable = new TaskFormSheet(pos, t.title, t.description);
+            editable.show(mainActivityReference.getSupportFragmentManager(), "editDialog");
         });
 
         holder.delete.setOnClickListener(v -> {

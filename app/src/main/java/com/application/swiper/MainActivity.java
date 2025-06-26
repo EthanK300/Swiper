@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -36,7 +35,6 @@ import org.vosk.Model;
 import org.vosk.Recognizer;
 import org.vosk.android.RecognitionListener;
 import org.vosk.android.SpeechService;
-import org.vosk.android.SpeechStreamService;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -66,7 +64,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements CreateFormSheet.OnFormSubmittedListener, TaskAction, RecognitionListener {
+public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnFormSubmittedListener, TaskAction, RecognitionListener {
     Intent intent;
     SharedPreferences sharedPrefs;
     SharedPreferences.Editor editor;
@@ -81,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
     long voiceCaptureDelay;
     String capturedText;
 
-    String[] labels = {"Today","This Week", "All", "Calendar"};
+    String[] labels = {"Today","This Week", "All"};
     boolean hasItems = false;
     int currentTab = -1;
     int prevTab = -1;
@@ -90,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
 
     ImageButton settings;
     ImageButton add;
+    ImageButton calendar;
     ImageButton aiAssist;
     ShapeableImageView profile;
     TabLayout tabLayout;
@@ -107,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         intent = getIntent();
         setContentView(R.layout.main_activity);
         settings = this.findViewById(R.id.settingsgear);
+        calendar = this.findViewById(R.id.calendar);
         add = this.findViewById(R.id.add);
         aiAssist = this.findViewById(R.id.aitool);
         profile = this.findViewById(R.id.profile_picture);
@@ -137,9 +137,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         // select starting tab
         for(int i = 0; i < labels.length; i++){
             String s = labels[i];
-            if(!s.equals("Calendar")){
-                tabLayout.addTab(tabLayout.newTab().setText(s));
-            }
+            tabLayout.addTab(tabLayout.newTab().setText(s));
         }
         userType = intent.getStringExtra("type");
         System.out.println("session type: " + userType);
@@ -178,6 +176,11 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         adapter = new TaskAdapter(this, shownTasks);
         item_container.setAdapter(adapter);
 
+        calendar.setOnClickListener(v -> {
+            // calendar holder
+            System.out.println("calendar clicked");
+        });
+
         settings.setOnClickListener(v -> {
             // using this as a temporary test button
             System.out.println("settings clicked");
@@ -189,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         add.setOnClickListener(v -> {
             long timestamp = Instant.now().toEpochMilli();
             System.out.println("timestamp for add: " + timestamp);
-            CreateFormSheet c = new CreateFormSheet();
+            TaskFormSheet c = new TaskFormSheet(-1);
             c.show(getSupportFragmentManager(), "formSheet");
         });
 
@@ -236,8 +239,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
                     System.out.println("selected tab this week");
                 }else if(tab.getPosition() == 2){        // all
                     System.out.println("selected tab all");
-                }else if(tab.getPosition() == 3){       // calendar
-                    System.out.println("selected tab calendar");
                 }else{
                     System.err.println("error reading tab position");
                 }
@@ -343,10 +344,6 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         updateContentView();
     }
 
-    public void editTask(int pos){
-        System.out.println("editing task: " + pos);
-    }
-
     public void deleteTask(int pos){
         System.out.println("deleting task: " + pos);
         tasksList.remove(pos);
@@ -384,10 +381,21 @@ public class MainActivity extends AppCompatActivity implements CreateFormSheet.O
         System.out.println("new shownTasks list size: " + shownTasks.size());
     }
     @Override
-    public void onFormSubmitted(String name, String description, long dueDate) {
-        System.out.println("received data from form in mainactivity");
-        Task t = new Task(name, description, dueDate);
-        addTask(t);
+    public void onFormSubmitted(String name, String description, long dueDate, int pos) {
+        if(pos == -1){
+            // normal create
+            System.out.println("received data from form in mainactivity");
+            Task t = new Task(name, description, dueDate);
+            addTask(t);
+        }else{
+            // edit the item at position 'pos'
+            Task t = tasksList.get(pos);
+            t.title = name;
+            t.description = description;
+            t.dueDate = dueDate;
+            updateContentView();
+        }
+
     }
 
     // using cookiejar, backend server will handle via express-session or something similar
