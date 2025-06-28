@@ -4,11 +4,13 @@ import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
     private Recognizer rec;
     long voiceCaptureDelay;
     String capturedText;
+    Dialog micOverlay;
 
     String[] labels = {"Today","This Week", "All"};
     boolean hasItems = false;
@@ -172,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
             // should only be type: newUser here
         }
 
+        // bind recyclerview for main task management
         item_container.setLayoutManager(new LinearLayoutManager(this));
         adapter = new TaskAdapter(this, shownTasks);
         item_container.setAdapter(adapter);
@@ -183,7 +187,6 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
 
         settings.setOnClickListener(v -> {
             // using this as a temporary test button
-            System.out.println("settings clicked");
             System.out.println("ctab: " + currentTab);
             System.out.println("tasklist size: " + tasksList.size() + ", shownlist size: " + shownTasks.size());
             if(speechService != null) speechService.stop();
@@ -512,6 +515,7 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
         }
         System.out.println("attempting to execute: " + capturedText);
         speechService.stop();
+        micOverlay.hide();
     }
 
     @Override
@@ -555,9 +559,16 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
         executor.execute(() -> {
             speechService.startListening(this);
             // listen until person stops speaking
-//            while((System.currentTimeMillis() - voiceCaptureDelay) <= 1000);
-//            speechService.stop();
         });
+        micOverlay = new Dialog(this);
+        micOverlay.setContentView(R.layout.mic_overlay);
+        micOverlay.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        // allow user to cancel early
+        micOverlay.setOnCancelListener(dialogInterface -> {
+            speechService.stop();
+            System.out.println("user canceled ai mic assist");
+        });
+        micOverlay.show();
     }
 
     @Override
