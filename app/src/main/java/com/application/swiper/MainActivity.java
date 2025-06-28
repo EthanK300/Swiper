@@ -12,9 +12,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.Layout;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -204,8 +208,22 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
             // TODO: add a layout for overlay that appears when detecting microphone input
             checkPermissions();
         });
+
         profile.setOnClickListener(v -> {
             System.out.println("profile clicked");
+            View profileMenu = ((LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE)).inflate(R.layout.profile_menu, null);
+            PopupWindow popupWindow = new PopupWindow(profileMenu,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    true);
+
+            Button signoutButton = profileMenu.findViewById(R.id.sign_out);
+            signoutButton.setOnClickListener(b -> {
+                System.out.println("user clicked sign out");
+                popupWindow.dismiss();
+            });
+
+            popupWindow.showAsDropDown(v, 0, 0);
         });
 
         int num = sharedPrefs.getInt("currentTab", -1);
