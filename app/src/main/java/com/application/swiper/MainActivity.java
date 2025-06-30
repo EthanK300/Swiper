@@ -205,7 +205,6 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
 
         aiAssist.setOnClickListener(v -> {
             // attempt to recognize audio
-            // TODO: add a layout for overlay that appears when detecting microphone input
             checkPermissions();
         });
 

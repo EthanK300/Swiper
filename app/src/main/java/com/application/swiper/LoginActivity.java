@@ -11,6 +11,7 @@ import android.util.TypedValue;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -80,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
                 String username = sharedPrefs.getString("username", "");
                 String password = sharedPrefs.getString("password", "");
                 if(username.equals("") || password.equals("")){
-                    // TODO: add alert notification or something that password expired / is null
+                    Toast.makeText(getApplicationContext(), "Your password has expired or is blank. Please login again", Toast.LENGTH_SHORT).show();
                 }else{
                     authLogin(username, password);
                 }
