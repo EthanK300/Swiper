@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -129,17 +130,17 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
         tasksList = new ArrayList<Task>();
         shownTasks = new ArrayList<Task>();
 
-        // attempt to load voice recognition model
-
-        try {
-            File m = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
-            System.out.println("trying model path: " + m.getAbsolutePath());
-            model = new Model(m.getAbsolutePath() + "/vosk-model-small-en-us-0.15");
-
-            System.out.println("loaded");
-        } catch (IOException e) {
-            System.out.println("voice recognition loading error");
-        }
+        // attempt to load voice recognition model on separate thread because it takes a while
+        executor.execute(() -> {
+            try {
+                File m = unzip(this, "vosk-model-small-en-us-0.15.zip", "vosk-model-small-en-us-0.15");
+                System.out.println("trying model path: " + m.getAbsolutePath());
+                model = new Model(m.getAbsolutePath() + "/vosk-model-small-en-us-0.15");
+                System.out.println("loaded");
+            } catch (IOException e) {
+                System.out.println("voice recognition loading error");
+            }
+        });
 
         // select starting tab
         for(int i = 0; i < labels.length; i++){
@@ -220,6 +221,16 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
             signoutButton.setOnClickListener(b -> {
                 System.out.println("user clicked sign out");
                 popupWindow.dismiss();
+                updateDatabase();
+                editor.clear();
+                editor.putBoolean("isLoggedIn", false);
+                editor.apply();
+                editor.commit();
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+                // the android room database will still hold the local user's data
             });
 
             popupWindow.showAsDropDown(v, 0, 0);
@@ -562,6 +573,10 @@ public class MainActivity extends AppCompatActivity implements TaskFormSheet.OnF
     }
 
     private void attemptRecognition(){
+        if(model == null){
+            Toast.makeText(getApplicationContext(), "Voice recognition model not loaded yet. Please wait and try again", Toast.LENGTH_SHORT).show();
+            return;
+        }
         System.out.println("attempting recognition");
         if(rec == null){
             rec = new Recognizer(model, 16000.0f);
