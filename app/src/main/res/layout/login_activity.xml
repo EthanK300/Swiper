@@ -20,7 +20,7 @@
         android:text="Swiper"
         android:id="@+id/title"
         android:textColor="@color/white"
-        android:fontFamily="@font/kiwifont"
+        android:fontFamily="@font/exo2"
         android:gravity="center"
         android:textSize="100sp"
         />
